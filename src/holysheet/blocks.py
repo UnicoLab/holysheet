@@ -1464,6 +1464,202 @@ class Video(Block):
 
 
 # ---------------------------------------------------------------------------
+# Advanced chart blocks (v0.4.0)
+# ---------------------------------------------------------------------------
+
+
+class GanttChart(Block):
+    """ECharts-based Gantt chart.
+
+    Attributes:
+        title: Chart title.
+        tasks: List of task dicts with ``name``, ``start``, ``end``,
+               and optional ``progress``, ``color``, ``group``.
+        height: Chart height in pixels.
+    """
+
+    type: Literal["gantt_chart"] = "gantt_chart"
+    title: str
+    tasks: list[dict[str, Any]] = Field(default_factory=list)
+    height: int = 400
+
+    def to_props(self) -> dict[str, Any]:
+        return {
+            "title": self.title,
+            "tasks": self.tasks,
+            "height": self.height,
+        }
+
+
+class DAGChart(Block):
+    """Directed Acyclic Graph using ECharts graph layout.
+
+    Attributes:
+        title: Chart title.
+        nodes: List of node dicts with ``id``, ``label``,
+               and optional ``color``, ``icon``.
+        edges: List of edge dicts with ``from``, ``to``,
+               and optional ``label``.
+        height: Chart height in pixels.
+        layout: Graph layout algorithm: ``'force'`` or ``'circular'``.
+    """
+
+    type: Literal["dag_chart"] = "dag_chart"
+    title: str
+    nodes: list[dict[str, Any]] = Field(default_factory=list)
+    edges: list[dict[str, Any]] = Field(default_factory=list)
+    height: int = 400
+    layout: Literal["force", "circular"] = "force"
+
+    def to_props(self) -> dict[str, Any]:
+        return {
+            "title": self.title,
+            "nodes": self.nodes,
+            "edges": self.edges,
+            "height": self.height,
+            "layout": self.layout,
+        }
+
+
+class CorrelationMatrix(Block):
+    """Correlation heatmap block.
+
+    Attributes:
+        title: Chart title.
+        matrix: 2D array of correlation values in [-1, 1].
+        labels: Column/row labels.
+        height: Chart height in pixels.
+    """
+
+    type: Literal["correlation_matrix"] = "correlation_matrix"
+    title: str
+    matrix: list[list[float]] = Field(default_factory=list)
+    labels: list[str] = Field(default_factory=list)
+    height: int = 400
+
+    def to_props(self) -> dict[str, Any]:
+        return {
+            "title": self.title,
+            "matrix": self.matrix,
+            "labels": self.labels,
+            "height": self.height,
+        }
+
+
+class Scorecard(Block):
+    """Dense metric grid with conditional coloring.
+
+    Attributes:
+        title: Block title.
+        data: Tabular data source.
+        columns: Optional explicit column names to display.
+        value_column: Column to apply threshold coloring to.
+        thresholds: Dict mapping colour names to condition expressions,
+                    e.g. ``{'green': '>90', 'yellow': '>70', 'red': '<=70'}``.
+    """
+
+    type: Literal["scorecard"] = "scorecard"
+    title: str
+    data: Any = None
+    columns: list[str] | None = None
+    value_column: str | None = None
+    thresholds: dict[str, str] | None = None
+
+    def to_props(self) -> dict[str, Any]:
+        return {
+            "title": self.title,
+            "data": to_records(self.data),
+            "columns": self.columns,
+            "value_column": self.value_column,
+            "thresholds": self.thresholds,
+        }
+
+
+class DataProfile(Block):
+    """Auto-EDA summary card.
+
+    Attributes:
+        title: Block title.
+        columns: List of column profile dicts with ``name``, ``dtype``,
+                 ``count``, ``null_count``, ``null_pct``, ``unique``,
+                 and optional ``mean``, ``std``, ``min``, ``max``, ``top_values``.
+    """
+
+    type: Literal["data_profile"] = "data_profile"
+    title: str
+    columns: list[dict[str, Any]] = Field(default_factory=list)
+
+    def to_props(self) -> dict[str, Any]:
+        return {
+            "title": self.title,
+            "columns": self.columns,
+        }
+
+
+class Compare(Block):
+    """Side-by-side comparison container.
+
+    Attributes:
+        left_label: Label for the left pane.
+        right_label: Label for the right pane.
+        left_children: Blocks for the left pane.
+        right_children: Blocks for the right pane.
+        mode: Comparison mode: ``'side_by_side'`` or ``'overlay'``.
+    """
+
+    type: Literal["compare"] = "compare"
+    left_label: str = "A"
+    right_label: str = "B"
+    left_children: list[AnyBlock] = Field(default_factory=list)
+    right_children: list[AnyBlock] = Field(default_factory=list)
+    mode: Literal["side_by_side", "overlay"] = "side_by_side"
+
+    def serialize(self, block_id: str, *, counter: int = 0) -> dict[str, Any]:
+        """Serialise compare block and its children.
+
+        Args:
+            block_id: This block's assigned ID.
+            counter: Starting counter for child ID generation.
+
+        Returns:
+            Full block dict with serialised left and right children.
+        """
+        child_offset = counter
+        serialised_left: list[dict[str, Any]] = []
+        for i, child in enumerate(self.left_children):
+            child_id = f"block_{child_offset + i + 1:03d}"
+            if isinstance(child, (Section, Columns, Tabs, Accordion, Compare)):
+                serialised_left.append(child.serialize(child_id, counter=child_offset + i + 1))
+            elif isinstance(child, Block):
+                serialised_left.append(child.serialize(child_id))
+            else:
+                serialised_left.append(child)
+        child_offset += len(self.left_children)
+
+        serialised_right: list[dict[str, Any]] = []
+        for i, child in enumerate(self.right_children):
+            child_id = f"block_{child_offset + i + 1:03d}"
+            if isinstance(child, (Section, Columns, Tabs, Accordion, Compare)):
+                serialised_right.append(child.serialize(child_id, counter=child_offset + i + 1))
+            elif isinstance(child, Block):
+                serialised_right.append(child.serialize(child_id))
+            else:
+                serialised_right.append(child)
+
+        return {
+            "id": block_id,
+            "type": self.type,
+            "props": {
+                "left_label": self.left_label,
+                "right_label": self.right_label,
+                "left_children": serialised_left,
+                "right_children": serialised_right,
+                "mode": self.mode,
+            },
+        }
+
+
+# ---------------------------------------------------------------------------
 # Discriminated union
 # ---------------------------------------------------------------------------
 
@@ -1514,7 +1710,13 @@ AnyBlock = Annotated[
     | RadioGroup
     | TagList
     | Sparkline
-    | Video,
+    | Video
+    | GanttChart
+    | DAGChart
+    | CorrelationMatrix
+    | Scorecard
+    | DataProfile
+    | Compare,
     Field(discriminator="type"),
 ]
 """Union type of all block models, discriminated on the ``type`` field."""
@@ -1524,3 +1726,4 @@ Section.model_rebuild()
 Columns.model_rebuild()
 Tabs.model_rebuild()
 Accordion.model_rebuild()
+Compare.model_rebuild()

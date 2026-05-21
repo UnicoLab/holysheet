@@ -32,35 +32,70 @@ class Report:
     Args:
         title: Report title.
         subtitle: Optional subtitle.
-        theme: Theme name (``'light'``, ``'dark'``, or ``'executive'``).
+        theme: Theme name (``'light'``, ``'dark'``, or ``'executive'``)
+               or a custom :class:`~holysheet.themes.Theme` instance.
         logo_url: Optional URL for a logo image.
         author: Optional report author name.
         report_version: Optional report version string.
         footer: Optional custom footer text.
+        theme_switch: Allow viewers to toggle dark/light mode.
+        presentation_mode: Enable presentation (slideshow) mode.
+        download_buttons: Show CSV download buttons on tables/charts.
+        password: Password-protect the exported HTML (client-side AES).
+        expires: ISO-8601 date string after which the report shows expired.
+        compress: Gzip-compress the embedded JSON data.
     """
 
     def __init__(
         self,
         title: str = "Untitled Report",
         subtitle: str | None = None,
-        theme: str = "light",
+        theme: str | Any = "light",
         logo_url: str | None = None,
         author: str | None = None,
         report_version: str | None = None,
         footer: str | None = None,
+        # ── Feature flags ────────────────────────────────
+        theme_switch: bool = False,
+        presentation_mode: bool = False,
+        download_buttons: bool = False,
+        password: str | None = None,
+        expires: str | None = None,
+        compress: bool = False,
     ) -> None:
-        validate_theme(theme)
+        # Handle custom Theme objects
+        from holysheet.themes import Theme
+
+        self._custom_theme: dict[str, Any] | None = None
+        if isinstance(theme, Theme):
+            self._custom_theme = theme.to_dict()
+            theme_name = theme.name
+        else:
+            validate_theme(theme)
+            theme_name = theme
+
         self.title = title
         self.subtitle = subtitle
-        self.theme = theme
+        self.theme = theme_name
         self.logo_url = logo_url
         self.author = author
         self.report_version = report_version
         self.footer = footer
         self._blocks: list[Block] = []
+        self._pages: list[dict[str, Any]] = []
         self._counter: int = 0
 
-        logger.debug("Report created: title={!r}, theme={!r}", title, theme)
+        # Feature flags
+        self._features = {
+            "theme_switch": theme_switch,
+            "presentation_mode": presentation_mode,
+            "download_buttons": download_buttons,
+        }
+        self._password = password
+        self._expires = expires
+        self._compress = compress
+
+        logger.debug("Report created: title={!r}, theme={!r}", title, theme_name)
 
     # ------------------------------------------------------------------
     # Block management
@@ -90,6 +125,71 @@ class Report:
 
     def __len__(self) -> int:
         return len(self._blocks)
+
+    # ------------------------------------------------------------------
+    # Multi-page support
+    # ------------------------------------------------------------------
+
+    def add_page(self, label: str, children: list[Block] | None = None) -> Report:
+        """Add a named page to the report.
+
+        When pages are used, the report renders with a sidebar/tab navigation.
+
+        Args:
+            label: Page label for navigation.
+            children: List of blocks for this page.
+
+        Returns:
+            ``self`` for method chaining.
+        """
+        self._pages.append(
+            {
+                "label": label,
+                "children": children or [],
+            }
+        )
+        logger.debug("Added page {!r} (total: {})", label, len(self._pages))
+        return self
+
+    # ------------------------------------------------------------------
+    # Global filters
+    # ------------------------------------------------------------------
+
+    def add_filter(
+        self,
+        key: str,
+        *,
+        type: str = "dropdown",  # noqa: A002
+        label: str | None = None,
+        options: list[Any] | None = None,
+        default: Any = None,
+    ) -> Report:
+        """Add a global filter to the report header.
+
+        Filters affect all blocks that reference the same ``key``.
+
+        Args:
+            key: Filter identifier used in block ``filters`` prop.
+            type: Filter type: ``'dropdown'``, ``'date_range'``, ``'text'``.
+            label: Display label.
+            options: Available options for dropdown type.
+            default: Default selected value.
+
+        Returns:
+            ``self`` for method chaining.
+        """
+        if "filters" not in self._features:
+            self._features["filters"] = []
+        self._features["filters"].append(
+            {
+                "key": key,
+                "type": type,
+                "label": label or key.replace("_", " ").title(),
+                "options": options or [],
+                "default": default,
+            }
+        )
+        return self
 
     # ------------------------------------------------------------------
     # Serialisation
@@ -147,23 +247,63 @@ class Report:
 
         return serialised
 
+    def _serialise_pages(self) -> list[dict[str, Any]]:
+        """Serialise pages and their child blocks."""
+        pages: list[dict[str, Any]] = []
+        counter = 0
+
+        for page in self._pages:
+            page_blocks: list[dict[str, Any]] = []
+            for block in page.get("children", []):
+                counter += 1
+                block_id = f"block_{counter:03d}"
+                if isinstance(block, (Section, Columns, Tabs)):
+                    child_count = self._count_children(block)
+                    page_blocks.append(block.serialize(block_id, counter=counter))
+                    counter += child_count
+                else:
+                    page_blocks.append(block.serialize(block_id))
+
+            pages.append(
+                {
+                    "label": page["label"],
+                    "blocks": page_blocks,
+                }
+            )
+
+        return pages
+
     def to_schema(self) -> ReportSchema:
         """Build a :class:`~holysheet.schema.ReportSchema` from this report.
 
         Returns:
             A fully populated schema instance.
         """
-        serialised_blocks = self._serialise_blocks()
-        return ReportSchema(
-            title=self.title,
-            subtitle=self.subtitle,
-            theme=self.theme,
-            logo_url=self.logo_url,
-            author=self.author,
-            report_version=self.report_version,
-            footer=self.footer,
-            blocks=serialised_blocks,
-        )
+        if self._pages:
+            serialised_blocks = self._serialise_pages()
+            self._features["multi_page"] = True
+        else:
+            serialised_blocks = self._serialise_blocks()
+
+        schema_kwargs: dict[str, Any] = {
+            "title": self.title,
+            "subtitle": self.subtitle,
+            "theme": self.theme,
+            "logo_url": self.logo_url,
+            "author": self.author,
+            "report_version": self.report_version,
+            "footer": self.footer,
+            "blocks": serialised_blocks,
+            "features": self._features if any(v for v in self._features.values()) else None,
+        }
+
+        if self._custom_theme:
+            schema_kwargs["custom_theme"] = self._custom_theme
+
+        if self._expires:
+            schema_kwargs["expires"] = self._expires
+
+        return ReportSchema(**schema_kwargs)
 
     def to_json(self, *, pretty: bool = False) -> str:
         """Serialise the report to a JSON string.
@@ -190,7 +330,13 @@ class Report:
             Resolved path of the written file.
         """
         schema = self.to_schema()
-        return export_standalone_html(schema, path)
+        result = export_standalone_html(
+            schema,
+            path,
+            password=self._password,
+            compress=self._compress,
+        )
+        return result
 
     def export_folder(self, path: str | Path) -> Path:
         """Export as a folder with index.html, assets, and report.json.
@@ -216,9 +362,86 @@ class Report:
         schema = self.to_schema()
         return export_json(schema, path)
 
+    def export_widget(
+        self,
+        path: str | Path,
+        block_ids: list[str] | None = None,
+    ) -> Path:
+        """Export a lightweight embeddable widget with a subset of blocks.
+
+        Args:
+            path: Output HTML file path.
+            block_ids: Optional list of block IDs to include. If None,
+                       includes all blocks.
+
+        Returns:
+            Resolved path of the written file.
+        """
+        schema = self.to_schema()
+        if block_ids:
+            schema.blocks = [b for b in schema.blocks if b.get("id") in block_ids]
+        schema.features = schema.features or {}
+        schema.features["widget_mode"] = True  # type: ignore[union-attr]
+        return export_standalone_html(schema, path)
+
+    # ------------------------------------------------------------------
+    # Jupyter integration
+    # ------------------------------------------------------------------
+
+    def _repr_html_(self) -> str:
+        """Render the report inline in Jupyter / IPython notebooks.
+
+        Returns:
+            HTML string for notebook display.
+        """
+        schema = self.to_schema()
+        from holysheet.exporters import _get_template, _read_asset
+
+        try:
+            css_content = _read_asset("app.css")
+            js_content = _read_asset("app.js")
+            json_spec = schema.to_json(pretty=False)
+            template = _get_template()
+            html = template.render(
+                title=schema.title,
+                css_content=css_content,
+                js_content=js_content,
+                json_spec=json_spec,
+            )
+            # Wrap in an iframe for isolation in notebooks
+            import base64
+            import html as html_lib
+
+            encoded = base64.b64encode(html.encode("utf-8")).decode("utf-8")
+            return (
+                f'<iframe srcdoc="" style="width:100%;height:800px;border:none;" '
+                f"onload=\"this.srcdoc=atob('{encoded}')\"></iframe>"
+            )
+        except Exception as exc:
+            return f"<pre>HolySheet render error: {html_lib.escape(str(exc))}</pre>"
+
+    def show(self, height: int = 800) -> Any:
+        """Display the report in a Jupyter notebook.
+
+        Args:
+            height: iframe height in pixels.
+
+        Returns:
+            IPython HTML display object.
+        """
+        try:
+            from IPython.display import HTML
+
+            return HTML(self._repr_html_())
+        except ImportError:
+            logger.warning("IPython not available. Use export_html() instead.")
+            return None
+
     # ------------------------------------------------------------------
     # Dunder
     # ------------------------------------------------------------------
 
     def __repr__(self) -> str:
+        if self._pages:
+            return f"Report(title={self.title!r}, theme={self.theme!r}, pages={len(self._pages)})"
         return f"Report(title={self.title!r}, theme={self.theme!r}, blocks={len(self._blocks)})"

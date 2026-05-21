@@ -1,10 +1,16 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, Suspense } from 'react';
 import ReactECharts from 'echarts-for-react';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import { useTheme } from '@mui/material/styles';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
+import { alpha, useTheme } from '@mui/material/styles';
+import { useFeatures } from '../FeaturesContext';
+import { downloadCSV } from '../utils/downloadCSV';
+import { SkeletonBlock } from './SkeletonBlock';
 import type { BlockSpec } from '../types';
 
 interface ChartBlockProps {
@@ -20,8 +26,13 @@ const accentColors = [
 
 export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
   const theme = useTheme();
-  const { title, data, x, y, name, value, series, height = 360 } = block.props;
+  const { features } = useFeatures();
+  const { title, data, x, y, name, value, series, height = 360, downloadable } = block.props;
   const isDark = theme.palette.mode === 'dark';
+  const accentColor = theme.palette.primary.main;
+
+  const showDownload = downloadable === true || features.download_buttons === true;
+  const isLargeDataset = data && data.length > 100;
 
   const option = useMemo(() => {
     if (!data || data.length === 0) return {};
@@ -291,7 +302,13 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
     };
   }, [data, block.type, x, y, name, value, series, isDark]);
 
-  return (
+  const handleDownload = () => {
+    if (!data || data.length === 0) return;
+    const filename = (title || 'chart_data').replace(/\s+/g, '_').toLowerCase();
+    downloadCSV(data, filename);
+  };
+
+  const chartContent = (
     <Card
       elevation={0}
       sx={{
@@ -309,11 +326,33 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
       }}
     >
       <CardContent sx={{ p: 3 }}>
-        {title && (
-          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, fontSize: '1rem' }}>
-            {title}
-          </Typography>
-        )}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: title ? 2 : 0 }}>
+          {title && (
+            <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
+              {title}
+            </Typography>
+          )}
+          {showDownload && data && data.length > 0 && (
+            <Tooltip title="Download data as CSV" arrow>
+              <IconButton
+                onClick={handleDownload}
+                size="small"
+                sx={{
+                  color: 'text.secondary',
+                  border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                  borderRadius: 2,
+                  '&:hover': {
+                    color: accentColor,
+                    borderColor: alpha(accentColor, 0.3),
+                    backgroundColor: alpha(accentColor, 0.05),
+                  },
+                }}
+              >
+                <FileDownloadOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
+        </Box>
         {(!data || data.length === 0) ? (
           <Box
             sx={{
@@ -337,4 +376,15 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
       </CardContent>
     </Card>
   );
+
+  // Wrap large datasets in Suspense with skeleton fallback
+  if (isLargeDataset) {
+    return (
+      <Suspense fallback={<SkeletonBlock height={height} variant="chart" />}>
+        {chartContent}
+      </Suspense>
+    );
+  }
+
+  return chartContent;
 };

@@ -4,9 +4,12 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
+import SlideshowOutlinedIcon from '@mui/icons-material/SlideshowOutlined';
 import { alpha, useTheme } from '@mui/material/styles';
 import { motion } from 'framer-motion';
-import type { ReportSpec } from '../types';
+import type { ReportSpec, ThemeName } from '../types';
 
 // ─── Print Styles ─────────────────────────────────────────────────────────────
 
@@ -29,9 +32,22 @@ const printStyles = {
 interface LayoutProps {
   spec: ReportSpec;
   children: React.ReactNode;
+  showThemeToggle?: boolean;
+  showPresentationButton?: boolean;
+  currentTheme: ThemeName;
+  onToggleTheme: () => void;
+  onEnterPresentation: () => void;
 }
 
-export const Layout: React.FC<LayoutProps> = ({ spec, children }) => {
+export const Layout: React.FC<LayoutProps> = ({
+  spec,
+  children,
+  showThemeToggle = false,
+  showPresentationButton = false,
+  currentTheme,
+  onToggleTheme,
+  onEnterPresentation,
+}) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const accentColor = theme.palette.primary.main;
@@ -49,6 +65,18 @@ export const Layout: React.FC<LayoutProps> = ({ spec, children }) => {
       return spec.created_at;
     }
   })();
+
+  // Shared button style
+  const actionButtonSx = {
+    color: 'text.secondary',
+    border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+    borderRadius: 2,
+    '&:hover': {
+      color: accentColor,
+      borderColor: alpha(accentColor, 0.3),
+      backgroundColor: alpha(accentColor, 0.05),
+    },
+  };
 
   return (
     <Box
@@ -188,20 +216,27 @@ export const Layout: React.FC<LayoutProps> = ({ spec, children }) => {
 
           {/* Action buttons */}
           <Box className="no-print" sx={{ display: 'flex', gap: 1, mt: 1 }}>
+            {/* Theme toggle */}
+            {showThemeToggle && (
+              <Tooltip title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'} arrow>
+                <IconButton onClick={onToggleTheme} sx={actionButtonSx}>
+                  {isDark ? <Brightness7Icon fontSize="small" /> : <Brightness4Icon fontSize="small" />}
+                </IconButton>
+              </Tooltip>
+            )}
+
+            {/* Presentation mode */}
+            {showPresentationButton && (
+              <Tooltip title="Presentation Mode" arrow>
+                <IconButton onClick={onEnterPresentation} sx={actionButtonSx}>
+                  <SlideshowOutlinedIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+
+            {/* Print */}
             <Tooltip title="Print / Export PDF" arrow>
-              <IconButton
-                onClick={() => window.print()}
-                sx={{
-                  color: 'text.secondary',
-                  border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                  borderRadius: 2,
-                  '&:hover': {
-                    color: accentColor,
-                    borderColor: alpha(accentColor, 0.3),
-                    backgroundColor: alpha(accentColor, 0.05),
-                  },
-                }}
-              >
+              <IconButton onClick={() => window.print()} sx={actionButtonSx}>
                 <PrintOutlinedIcon fontSize="small" />
               </IconButton>
             </Tooltip>

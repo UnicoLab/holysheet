@@ -5,12 +5,13 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
+import Divider from '@mui/material/Divider';
 import { alpha, useTheme } from '@mui/material/styles';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import TrendingFlatIcon from '@mui/icons-material/TrendingFlat';
 import { motion } from 'framer-motion';
-import type { BlockComponentProps, KPIProps, KPIStatus } from '../types';
+import type { BlockComponentProps, KPIProps, KPIStatus, KPITooltipDetail } from '../types';
 
 // ─── Status Config ────────────────────────────────────────────────────────────
 
@@ -18,6 +19,56 @@ const statusConfig: Record<KPIStatus, { color: string; Icon: React.ElementType }
   positive: { color: '#34D399', Icon: TrendingUpIcon },
   negative: { color: '#F87171', Icon: TrendingDownIcon },
   neutral: { color: '#94A3B8', Icon: TrendingFlatIcon },
+};
+
+// ─── Rich Tooltip Content ─────────────────────────────────────────────────────
+
+interface TooltipCardProps {
+  detail: KPITooltipDetail;
+}
+
+const TooltipCard: React.FC<TooltipCardProps> = ({ detail }) => {
+  return (
+    <Box sx={{ p: 0.5, minWidth: 180 }}>
+      <Typography
+        variant="caption"
+        sx={{
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: '0.06em',
+          fontSize: '0.6rem',
+          color: 'rgba(255,255,255,0.6)',
+          mb: 1,
+          display: 'block',
+        }}
+      >
+        Breakdown
+      </Typography>
+      <Divider sx={{ mb: 1, borderColor: 'rgba(255,255,255,0.1)' }} />
+      {detail.breakdown.map((item, idx) => (
+        <Box
+          key={idx}
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            py: 0.5,
+            gap: 2,
+          }}
+        >
+          <Typography variant="body2" sx={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.8)' }}>
+            {item.label}
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#fff' }}
+          >
+            {item.value}
+          </Typography>
+        </Box>
+      ))}
+    </Box>
+  );
 };
 
 // ─── KPI Block ────────────────────────────────────────────────────────────────
@@ -30,7 +81,9 @@ export const KPIBlock: React.FC<BlockComponentProps> = ({ block }) => {
   const accentColor = theme.palette.primary.main;
   const isDark = theme.palette.mode === 'dark';
 
-  return (
+  const hasTooltipDetail = props.tooltip_detail?.breakdown && props.tooltip_detail.breakdown.length > 0;
+
+  const cardContent = (
     <Card
       sx={{
         position: 'relative',
@@ -40,6 +93,7 @@ export const KPIBlock: React.FC<BlockComponentProps> = ({ block }) => {
         backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.8)',
         backdropFilter: 'blur(12px)',
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        cursor: hasTooltipDetail ? 'pointer' : 'default',
         '&:hover': {
           transform: 'translateY(-3px)',
           boxShadow: isDark
@@ -153,4 +207,41 @@ export const KPIBlock: React.FC<BlockComponentProps> = ({ block }) => {
       </CardContent>
     </Card>
   );
+
+  // Wrap in rich tooltip if tooltip_detail is provided
+  if (hasTooltipDetail) {
+    return (
+      <Tooltip
+        title={<TooltipCard detail={props.tooltip_detail!} />}
+        arrow
+        placement="bottom"
+        enterDelay={200}
+        leaveDelay={100}
+        componentsProps={{
+          tooltip: {
+            sx: {
+              bgcolor: 'rgba(15, 15, 25, 0.95)',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: 3,
+              p: 1.5,
+              maxWidth: 320,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+            },
+          },
+          arrow: {
+            sx: {
+              color: 'rgba(15, 15, 25, 0.95)',
+            },
+          },
+        }}
+      >
+        <Box sx={{ height: '100%' }}>
+          {cardContent}
+        </Box>
+      </Tooltip>
+    );
+  }
+
+  return cardContent;
 };

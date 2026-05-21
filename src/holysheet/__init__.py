@@ -9,7 +9,7 @@ Quick start::
     report.export_html("report.html")
 
 Exports:
-    Report, all 47 block types, and __version__
+    Report, all block types, Theme, templates, and __version__
 """
 
 from __future__ import annotations
@@ -26,11 +26,16 @@ from holysheet.blocks import (
     CheckboxGroup,
     CodeBlock,
     Columns,
+    Compare,
+    CorrelationMatrix,
+    DAGChart,
+    DataProfile,
     DataTable,
     Divider,
     Dropdown,
     Embed,
     FunnelChart,
+    GanttChart,
     GaugeChart,
     HeatmapChart,
     Image,
@@ -47,6 +52,7 @@ from holysheet.blocks import (
     RadioGroup,
     SankeyChart,
     ScatterChart,
+    Scorecard,
     Section,
     Slider,
     Sparkline,
@@ -64,10 +70,12 @@ from holysheet.blocks import (
     WaterfallChart,
 )
 from holysheet.report import Report
+from holysheet.themes import Theme
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 __all__ = [
+    # KPI & Metrics
     "KPI",
     "Accordion",
     "Alert",
@@ -79,16 +87,23 @@ __all__ = [
     "CheckboxGroup",
     "CodeBlock",
     "Columns",
+    "Compare",
+    "CorrelationMatrix",
+    "DAGChart",
+    "DataProfile",
+    # Data & Content
     "DataTable",
     "Divider",
     "Dropdown",
     "Embed",
     "FunnelChart",
+    "GanttChart",
     "GaugeChart",
     "HeatmapChart",
     "Image",
     "InfoList",
     "JsonViewer",
+    # Charts
     "LineChart",
     "MapChart",
     "Markdown",
@@ -98,10 +113,14 @@ __all__ = [
     "ProgressBar",
     "RadarChart",
     "RadioGroup",
+    # Core
     "Report",
     "SankeyChart",
     "ScatterChart",
+    "Scorecard",
+    # Layout
     "Section",
+    # Interactive
     "Slider",
     "Sparkline",
     "StatComparison",
@@ -110,11 +129,13 @@ __all__ = [
     "Tabs",
     "TagList",
     "TextInput",
+    "Theme",
     "Timeline",
     "Toggle",
     "TreemapChart",
     "UserCard",
     "Video",
     "WaterfallChart",
+    # Meta
     "__version__",
 ]

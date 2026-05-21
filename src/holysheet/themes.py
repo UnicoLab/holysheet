@@ -219,3 +219,115 @@ def list_themes() -> list[str]:
         Sorted list of theme name strings.
     """
     return sorted(THEMES.keys())
+
+
+# ---------------------------------------------------------------------------
+# Custom Theme API
+# ---------------------------------------------------------------------------
+
+
+class Theme:
+    """Custom theme builder for branded dashboards.
+
+    Create a fully custom theme by overriding base theme tokens::
+
+        from holysheet.themes import Theme
+
+        brand = Theme(
+            name="brand",
+            primary="#FF6B00",
+            background="#0A0A0F",
+            font="Satoshi",
+            chart_palette=["#FF6B00", "#00D4AA", "#6366F1"],
+        )
+        report = Report(title="Branded", theme=brand)
+
+    Args:
+        name: Theme name identifier.
+        base: Base theme to extend (``'dark'``, ``'light'``, ``'executive'``).
+        primary: Primary brand color.
+        secondary: Secondary color.
+        background: Background color.
+        surface: Card/surface color.
+        text: Main text color.
+        text_secondary: Secondary text color.
+        border: Border color.
+        success: Success status color.
+        warning: Warning status color.
+        danger: Danger/error color.
+        info: Info color.
+        font: Body + heading font family.
+        mono_font: Monospace font family.
+        chart_palette: List of chart colors.
+    """
+
+    def __init__(
+        self,
+        name: str = "custom",
+        base: str = "dark",
+        primary: str | None = None,
+        secondary: str | None = None,
+        background: str | None = None,
+        surface: str | None = None,
+        text: str | None = None,
+        text_secondary: str | None = None,
+        border: str | None = None,
+        success: str | None = None,
+        warning: str | None = None,
+        danger: str | None = None,
+        info: str | None = None,
+        font: str | None = None,
+        mono_font: str | None = None,
+        chart_palette: list[str] | None = None,
+    ) -> None:
+        if base not in THEMES:
+            available = ", ".join(sorted(THEMES.keys()))
+            raise HolySheetError(f"Unknown base theme '{base}'. Available: {available}")
+
+        import copy
+
+        self.name = name
+        self._theme = copy.deepcopy(THEMES[base])
+        self._theme["name"] = name
+
+        # Override colors
+        color_overrides = {
+            "primary": primary,
+            "secondary": secondary,
+            "background": background,
+            "surface": surface,
+            "text": text,
+            "text_secondary": text_secondary,
+            "border": border,
+            "success": success,
+            "warning": warning,
+            "danger": danger,
+            "info": info,
+        }
+        for key, value in color_overrides.items():
+            if value is not None:
+                self._theme["colors"][key] = value
+
+        if chart_palette is not None:
+            self._theme["colors"]["chart_palette"] = chart_palette
+
+        # Override fonts
+        if font is not None:
+            font_stack = f"'{font}', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+            self._theme["fonts"]["body"] = font_stack
+            self._theme["fonts"]["heading"] = font_stack
+
+        if mono_font is not None:
+            mono_stack = f"'{mono_font}', 'Fira Code', 'Consolas', monospace"
+            self._theme["fonts"]["mono"] = mono_stack
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return the full theme dictionary.
+
+        Returns:
+            Complete theme dict compatible with the renderer.
+        """
+        return self._theme
+
+    def __repr__(self) -> str:
+        return f"Theme(name={self.name!r})"

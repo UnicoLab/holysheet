@@ -4,6 +4,14 @@ export type ThemeName = 'light' | 'dark' | 'executive';
 
 export type KPIStatus = 'positive' | 'negative' | 'neutral';
 
+// ─── Report Features ──────────────────────────────────────────────────────────
+
+export interface ReportFeatures {
+  theme_switch?: boolean;
+  presentation_mode?: boolean;
+  download_buttons?: boolean;
+}
+
 // ─── Report Spec ──────────────────────────────────────────────────────────────
 
 export interface ReportSpec {
@@ -13,6 +21,7 @@ export interface ReportSpec {
   theme: ThemeName;
   created_at: string;
   blocks: BlockSpec[];
+  features?: ReportFeatures;
 }
 
 // ─── Block Spec (generic envelope) ────────────────────────────────────────────
@@ -25,6 +34,15 @@ export interface BlockSpec {
 
 // ─── KPI ──────────────────────────────────────────────────────────────────────
 
+export interface KPITooltipBreakdownItem {
+  label: string;
+  value: string | number;
+}
+
+export interface KPITooltipDetail {
+  breakdown: KPITooltipBreakdownItem[];
+}
+
 export interface KPIProps {
   label: string;
   value: string | number;
@@ -32,6 +50,7 @@ export interface KPIProps {
   delta?: string;
   status?: KPIStatus;
   description?: string;
+  tooltip_detail?: KPITooltipDetail;
 }
 
 // ─── Charts ───────────────────────────────────────────────────────────────────
@@ -45,9 +64,16 @@ export interface ChartProps {
   value?: string;
   series?: string;
   height?: number;
+  downloadable?: boolean;
 }
 
 // ─── Table ────────────────────────────────────────────────────────────────────
+
+export interface TableColumnFormatting {
+  color_map?: Record<string, string>;
+  data_bar?: boolean;
+  icon_map?: Record<string, string>;
+}
 
 export interface TableProps {
   title: string;
@@ -55,6 +81,8 @@ export interface TableProps {
   columns?: string[];
   searchable?: boolean;
   paginated?: boolean;
+  downloadable?: boolean;
+  formatting?: Record<string, TableColumnFormatting>;
 }
 
 // ─── Markdown ─────────────────────────────────────────────────────────────────

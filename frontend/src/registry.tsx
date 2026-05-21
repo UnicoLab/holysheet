@@ -41,6 +41,12 @@ import { RadioGroupBlock } from './components/RadioGroupBlock';
 import { TagListBlock } from './components/TagListBlock';
 import { SparklineBlock } from './components/SparklineBlock';
 import { VideoBlock } from './components/VideoBlock';
+import { GanttChartBlock } from './components/GanttChartBlock';
+import { DAGBlock } from './components/DAGBlock';
+import { CorrelationMatrixBlock } from './components/CorrelationMatrixBlock';
+import { ScorecardBlock } from './components/ScorecardBlock';
+import { DataProfileBlock } from './components/DataProfileBlock';
+import { CompareBlock } from './components/CompareBlock';
 import type { BlockSpec } from './types';
 
 // ─── Block Registry ───────────────────────────────────────────────────────────
@@ -92,6 +98,13 @@ export const blockRegistry: Record<string, React.ComponentType<any>> = {
   tag_list: TagListBlock,
   sparkline: SparklineBlock,
   video: VideoBlock,
+  // Advanced chart & analysis blocks
+  gantt_chart: GanttChartBlock,
+  dag_chart: DAGBlock,
+  correlation_matrix: CorrelationMatrixBlock,
+  scorecard: ScorecardBlock,
+  data_profile: DataProfileBlock,
+  compare: CompareBlock,
 };
 
 // ─── Size Categories ──────────────────────────────────────────────────────────
@@ -123,6 +136,9 @@ function getSizeCategory(type: string): SizeCategory {
     case 'waterfall_chart':
     case 'box_plot_chart':
     case 'map_chart':
+    case 'gantt_chart':
+    case 'dag_chart':
+    case 'correlation_matrix':
       return 'wide';
     default:
       return 'full';
