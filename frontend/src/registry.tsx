@@ -20,6 +20,27 @@ import { ColumnsBlock } from './components/ColumnsBlock';
 import { TabsBlock } from './components/TabsBlock';
 import { CodeBlockComponent } from './components/CodeBlockComponent';
 import { ImageBlock } from './components/ImageBlock';
+import { HeatmapBlock } from './components/HeatmapBlock';
+import { CandlestickBlock } from './components/CandlestickBlock';
+import { SankeyBlock } from './components/SankeyBlock';
+import { WaterfallBlock } from './components/WaterfallBlock';
+import { BoxPlotBlock } from './components/BoxPlotBlock';
+import { MapChartBlock } from './components/MapChartBlock';
+import { TimelineBlock } from './components/TimelineBlock';
+import { CalloutBlock } from './components/CalloutBlock';
+import { EmbedBlock } from './components/EmbedBlock';
+import { JsonViewerBlock } from './components/JsonViewerBlock';
+import { UserCardBlock } from './components/UserCardBlock';
+import { StatusListBlock } from './components/StatusListBlock';
+import { InfoListBlock } from './components/InfoListBlock';
+import { StepperBlock } from './components/StepperBlock';
+import { DropdownBlock } from './components/DropdownBlock';
+import { TextInputBlock } from './components/TextInputBlock';
+import { CheckboxGroupBlock } from './components/CheckboxGroupBlock';
+import { RadioGroupBlock } from './components/RadioGroupBlock';
+import { TagListBlock } from './components/TagListBlock';
+import { SparklineBlock } from './components/SparklineBlock';
+import { VideoBlock } from './components/VideoBlock';
 import type { BlockSpec } from './types';
 
 // ─── Block Registry ───────────────────────────────────────────────────────────
@@ -46,6 +67,31 @@ export const blockRegistry: Record<string, React.ComponentType<any>> = {
   tabs: TabsBlock,
   code_block: CodeBlockComponent,
   image: ImageBlock,
+  // New chart blocks
+  heatmap_chart: HeatmapBlock,
+  candlestick_chart: CandlestickBlock,
+  sankey_chart: SankeyBlock,
+  waterfall_chart: WaterfallBlock,
+  box_plot_chart: BoxPlotBlock,
+  map_chart: MapChartBlock,
+  // New content blocks
+  timeline: TimelineBlock,
+  callout: CalloutBlock,
+  embed: EmbedBlock,
+  json_viewer: JsonViewerBlock,
+  user_card: UserCardBlock,
+  status_list: StatusListBlock,
+  info_list: InfoListBlock,
+  stepper: StepperBlock,
+  // New interactive blocks
+  dropdown: DropdownBlock,
+  text_input: TextInputBlock,
+  checkbox_group: CheckboxGroupBlock,
+  radio_group: RadioGroupBlock,
+  // New display blocks
+  tag_list: TagListBlock,
+  sparkline: SparklineBlock,
+  video: VideoBlock,
 };
 
 // ─── Size Categories ──────────────────────────────────────────────────────────
@@ -56,9 +102,12 @@ function getSizeCategory(type: string): SizeCategory {
   switch (type) {
     case 'kpi':
     case 'metric':
+    case 'sparkline':
       return 'compact';
     case 'gauge':
     case 'progress':
+    case 'user_card':
+    case 'tag_list':
       return 'medium';
     case 'pie_chart':
     case 'line_chart':
@@ -68,6 +117,12 @@ function getSizeCategory(type: string): SizeCategory {
     case 'radar_chart':
     case 'funnel_chart':
     case 'treemap_chart':
+    case 'heatmap_chart':
+    case 'candlestick_chart':
+    case 'sankey_chart':
+    case 'waterfall_chart':
+    case 'box_plot_chart':
+    case 'map_chart':
       return 'wide';
     default:
       return 'full';

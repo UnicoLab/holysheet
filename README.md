@@ -15,11 +15,13 @@
 <p align="center">
   <a href="https://pypi.org/project/holysheet"><img alt="PyPI" src="https://img.shields.io/pypi/v/holysheet?color=3B82F6&style=flat-square"></a>
   <a href="https://pypi.org/project/holysheet"><img alt="Python" src="https://img.shields.io/pypi/pyversions/holysheet?color=8B5CF6&style=flat-square"></a>
-  <a href="https://github.com/UnicoLab/HolySheet/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/UnicoLab/HolySheet?color=10B981&style=flat-square"></a>
-  <a href="https://github.com/UnicoLab/HolySheet/actions"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/UnicoLab/HolySheet/ci.yml?style=flat-square&label=CI"></a>
+  <a href="https://github.com/UnicoLab/holysheet/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/UnicoLab/holysheet?color=10B981&style=flat-square"></a>
+  <a href="https://github.com/UnicoLab/holysheet/actions"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/UnicoLab/holysheet/ci.yml?style=flat-square&label=CI"></a>
+  <a href="https://unicolab.github.io/holysheet"><img alt="Docs" src="https://img.shields.io/badge/docs-mkdocs-blue?style=flat-square&logo=materialformkdocs"></a>
 </p>
 
 <p align="center">
+  <a href="https://unicolab.github.io/holysheet">📖 Documentation</a> •
   <a href="#-quickstart">Quickstart</a> •
   <a href="#-installation">Installation</a> •
   <a href="#-block-reference">Block Reference</a> •
@@ -27,6 +29,7 @@
   <a href="#-architecture">Architecture</a> •
   <a href="#-development">Development</a>
 </p>
+
 
 ---
 

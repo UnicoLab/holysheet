@@ -916,6 +916,554 @@ class StatComparison(Block):
 
 
 # ---------------------------------------------------------------------------
+# New chart blocks (v0.3.0)
+# ---------------------------------------------------------------------------
+
+
+class HeatmapChart(Block):
+    """2D heatmap chart.
+
+    Attributes:
+        title: Chart title.
+        data: Data source (list of dicts or DataFrame).
+        x: Column name for X axis.
+        y: Column name for Y axis.
+        value: Column name for the heat value.
+        height: Chart height in pixels.
+    """
+
+    type: Literal["heatmap_chart"] = "heatmap_chart"
+    title: str
+    data: Any
+    x: str
+    y: str
+    value: str
+    height: int = 360
+
+    def to_props(self) -> dict[str, Any]:
+        return {
+            "title": self.title,
+            "data": to_records(self.data),
+            "x": self.x,
+            "y": self.y,
+            "value": self.value,
+            "height": self.height,
+        }
+
+
+class CandlestickChart(Block):
+    """Financial candlestick / OHLC chart.
+
+    Attributes:
+        title: Chart title.
+        data: Data source with OHLC columns.
+        x: Column for date/category axis.
+        open: Column for open price.
+        close: Column for close price.
+        low: Column for low price.
+        high: Column for high price.
+        height: Chart height in pixels.
+    """
+
+    type: Literal["candlestick_chart"] = "candlestick_chart"
+    title: str
+    data: Any
+    x: str
+    open: str = "open"
+    close: str = "close"
+    low: str = "low"
+    high: str = "high"
+    height: int = 400
+
+    def to_props(self) -> dict[str, Any]:
+        return {
+            "title": self.title,
+            "data": to_records(self.data),
+            "x": self.x,
+            "open": self.open,
+            "close": self.close,
+            "low": self.low,
+            "high": self.high,
+            "height": self.height,
+        }
+
+
+class SankeyChart(Block):
+    """Sankey / flow diagram.
+
+    Attributes:
+        title: Chart title.
+        nodes: List of node dicts with ``name`` key.
+        links: List of link dicts with ``source``, ``target``, ``value``.
+        height: Chart height in pixels.
+    """
+
+    type: Literal["sankey_chart"] = "sankey_chart"
+    title: str
+    nodes: list[dict[str, Any]]
+    links: list[dict[str, Any]]
+    height: int = 400
+
+    def to_props(self) -> dict[str, Any]:
+        return {
+            "title": self.title,
+            "nodes": self.nodes,
+            "links": self.links,
+            "height": self.height,
+        }
+
+
+class WaterfallChart(Block):
+    """Waterfall / bridge chart for financial analysis.
+
+    Attributes:
+        title: Chart title.
+        data: Data source with category and value columns.
+        category: Column name for categories.
+        value: Column name for values.
+        height: Chart height in pixels.
+    """
+
+    type: Literal["waterfall_chart"] = "waterfall_chart"
+    title: str
+    data: Any
+    category: str
+    value: str
+    height: int = 360
+
+    def to_props(self) -> dict[str, Any]:
+        return {
+            "title": self.title,
+            "data": to_records(self.data),
+            "category": self.category,
+            "value": self.value,
+            "height": self.height,
+        }
+
+
+class BoxPlotChart(Block):
+    """Statistical box plot chart.
+
+    Attributes:
+        title: Chart title.
+        data: List of [min, Q1, median, Q3, max] arrays.
+        categories: Labels for each box.
+        height: Chart height in pixels.
+    """
+
+    type: Literal["box_plot_chart"] = "box_plot_chart"
+    title: str
+    data: list[list[float]]
+    categories: list[str] | None = None
+    height: int = 360
+
+    def to_props(self) -> dict[str, Any]:
+        return {
+            "title": self.title,
+            "data": self.data,
+            "categories": self.categories,
+            "height": self.height,
+        }
+
+
+class MapChart(Block):
+    """Geographical scatter chart.
+
+    Attributes:
+        title: Chart title.
+        data: Data source with lat/lng/value columns.
+        lat: Column name for latitude.
+        lng: Column name for longitude.
+        value: Column name for bubble size.
+        name: Column name for point labels.
+        height: Chart height in pixels.
+    """
+
+    type: Literal["map_chart"] = "map_chart"
+    title: str
+    data: Any
+    lat: str
+    lng: str
+    value: str
+    name: str | None = None
+    height: int = 400
+
+    def to_props(self) -> dict[str, Any]:
+        return {
+            "title": self.title,
+            "data": to_records(self.data),
+            "lat": self.lat,
+            "lng": self.lng,
+            "value": self.value,
+            "name": self.name,
+            "height": self.height,
+        }
+
+
+# ---------------------------------------------------------------------------
+# New content blocks (v0.3.0)
+# ---------------------------------------------------------------------------
+
+
+class Timeline(Block):
+    """Vertical timeline for events/milestones.
+
+    Attributes:
+        title: Optional timeline heading.
+        events: List of event dicts with ``date``, ``title``,
+                and optional ``description``, ``icon``, ``color``.
+    """
+
+    type: Literal["timeline"] = "timeline"
+    title: str | None = None
+    events: list[dict[str, Any]] = Field(default_factory=list)
+
+    def to_props(self) -> dict[str, Any]:
+        return {"title": self.title, "events": self.events}
+
+
+class Callout(Block):
+    """Styled quote or highlight box.
+
+    Attributes:
+        content: The callout text.
+        author: Optional attribution.
+        icon: Optional emoji icon.
+        variant: Style variant: ``'quote'``, ``'highlight'``, or ``'note'``.
+    """
+
+    type: Literal["callout"] = "callout"
+    content: str
+    author: str | None = None
+    icon: str | None = None
+    variant: Literal["quote", "highlight", "note"] = "quote"
+
+    def to_props(self) -> dict[str, Any]:
+        return {
+            "content": self.content,
+            "author": self.author,
+            "icon": self.icon,
+            "variant": self.variant,
+        }
+
+
+class Embed(Block):
+    """Iframe embed block.
+
+    Attributes:
+        url: URL to embed.
+        title: Optional frame title.
+        height: Frame height in pixels.
+        aspect_ratio: Optional aspect ratio (e.g. ``'16/9'``).
+    """
+
+    type: Literal["embed"] = "embed"
+    url: str
+    title: str | None = None
+    height: int = 400
+    aspect_ratio: str | None = None
+
+    def to_props(self) -> dict[str, Any]:
+        return {
+            "url": self.url,
+            "title": self.title,
+            "height": self.height,
+            "aspect_ratio": self.aspect_ratio,
+        }
+
+
+class JsonViewer(Block):
+    """Formatted JSON display.
+
+    Attributes:
+        data: Any JSON-serialisable data.
+        title: Optional heading.
+        collapsed_depth: Depth to collapse by default.
+    """
+
+    type: Literal["json_viewer"] = "json_viewer"
+    data: Any
+    title: str | None = None
+    collapsed_depth: int = 2
+
+    def to_props(self) -> dict[str, Any]:
+        return {
+            "data": self.data,
+            "title": self.title,
+            "collapsed_depth": self.collapsed_depth,
+        }
+
+
+class UserCard(Block):
+    """Team member / person card.
+
+    Attributes:
+        name: Person's full name.
+        role: Job title / role.
+        avatar_url: Optional avatar image URL.
+        email: Optional email address.
+        stats: Optional list of ``{label, value}`` stat items.
+    """
+
+    type: Literal["user_card"] = "user_card"
+    name: str
+    role: str | None = None
+    avatar_url: str | None = None
+    email: str | None = None
+    stats: list[dict[str, Any]] | None = None
+
+    def to_props(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "role": self.role,
+            "avatar_url": self.avatar_url,
+            "email": self.email,
+            "stats": self.stats,
+        }
+
+
+class StatusList(Block):
+    """List with status indicators (dots).
+
+    Attributes:
+        title: Optional list heading.
+        items: List of ``{label, status, description?, value?}`` dicts.
+               Status: ``'success'``, ``'warning'``, ``'error'``, ``'info'``, ``'pending'``.
+    """
+
+    type: Literal["status_list"] = "status_list"
+    title: str | None = None
+    items: list[dict[str, Any]] = Field(default_factory=list)
+
+    def to_props(self) -> dict[str, Any]:
+        return {"title": self.title, "items": self.items}
+
+
+class InfoList(Block):
+    """Key-value pair display.
+
+    Attributes:
+        title: Optional heading.
+        items: List of ``{key, value, icon?}`` dicts.
+    """
+
+    type: Literal["info_list"] = "info_list"
+    title: str | None = None
+    items: list[dict[str, Any]] = Field(default_factory=list)
+
+    def to_props(self) -> dict[str, Any]:
+        return {"title": self.title, "items": self.items}
+
+
+class Stepper(Block):
+    """Process / wizard steps display.
+
+    Attributes:
+        title: Optional heading.
+        steps: List of ``{label, description?, status?}`` dicts.
+               Status: ``'complete'``, ``'active'``, ``'pending'``.
+        current_step: Index of the currently active step (0-based).
+    """
+
+    type: Literal["stepper"] = "stepper"
+    title: str | None = None
+    steps: list[dict[str, Any]] = Field(default_factory=list)
+    current_step: int | None = None
+
+    def to_props(self) -> dict[str, Any]:
+        return {
+            "title": self.title,
+            "steps": self.steps,
+            "current_step": self.current_step,
+        }
+
+
+# ---------------------------------------------------------------------------
+# New interactive blocks (v0.3.0)
+# ---------------------------------------------------------------------------
+
+
+class Dropdown(Block):
+    """Interactive dropdown selector.
+
+    Attributes:
+        label: Field label.
+        options: List of ``{label, value}`` option dicts.
+        default_value: Initial selected value.
+        description: Optional helper text.
+    """
+
+    type: Literal["dropdown"] = "dropdown"
+    label: str
+    options: list[dict[str, Any]] = Field(default_factory=list)
+    default_value: Any | None = None
+    description: str | None = None
+
+    def to_props(self) -> dict[str, Any]:
+        return {
+            "label": self.label,
+            "options": self.options,
+            "default_value": self.default_value,
+            "description": self.description,
+        }
+
+
+class TextInput(Block):
+    """Text input field.
+
+    Attributes:
+        label: Field label.
+        placeholder: Placeholder text.
+        default_value: Initial value.
+        multiline: If ``True``, render as textarea.
+        rows: Number of rows for multiline.
+        description: Optional helper text.
+    """
+
+    type: Literal["text_input"] = "text_input"
+    label: str
+    placeholder: str | None = None
+    default_value: str | None = None
+    multiline: bool = False
+    rows: int = 3
+    description: str | None = None
+
+    def to_props(self) -> dict[str, Any]:
+        return {
+            "label": self.label,
+            "placeholder": self.placeholder,
+            "default_value": self.default_value,
+            "multiline": self.multiline,
+            "rows": self.rows,
+            "description": self.description,
+        }
+
+
+class CheckboxGroup(Block):
+    """Multiple checkbox selection.
+
+    Attributes:
+        label: Group label.
+        options: List of ``{label, value}`` option dicts.
+        default_values: List of initially checked values.
+        description: Optional helper text.
+    """
+
+    type: Literal["checkbox_group"] = "checkbox_group"
+    label: str
+    options: list[dict[str, Any]] = Field(default_factory=list)
+    default_values: list[Any] | None = None
+    description: str | None = None
+
+    def to_props(self) -> dict[str, Any]:
+        return {
+            "label": self.label,
+            "options": self.options,
+            "default_values": self.default_values,
+            "description": self.description,
+        }
+
+
+class RadioGroup(Block):
+    """Radio button selection.
+
+    Attributes:
+        label: Group label.
+        options: List of ``{label, value}`` option dicts.
+        default_value: Initially selected value.
+        description: Optional helper text.
+    """
+
+    type: Literal["radio_group"] = "radio_group"
+    label: str
+    options: list[dict[str, Any]] = Field(default_factory=list)
+    default_value: Any | None = None
+    description: str | None = None
+
+    def to_props(self) -> dict[str, Any]:
+        return {
+            "label": self.label,
+            "options": self.options,
+            "default_value": self.default_value,
+            "description": self.description,
+        }
+
+
+# ---------------------------------------------------------------------------
+# New display blocks (v0.3.0)
+# ---------------------------------------------------------------------------
+
+
+class TagList(Block):
+    """List of coloured tags / badges.
+
+    Attributes:
+        title: Optional heading.
+        tags: List of ``{label, color?, variant?}`` dicts.
+    """
+
+    type: Literal["tag_list"] = "tag_list"
+    title: str | None = None
+    tags: list[dict[str, Any]] = Field(default_factory=list)
+
+    def to_props(self) -> dict[str, Any]:
+        return {"title": self.title, "tags": self.tags}
+
+
+class Sparkline(Block):
+    """Tiny inline sparkline chart.
+
+    Attributes:
+        data: List of numeric values.
+        color: Line colour.
+        height: Chart height in pixels.
+        show_area: Whether to fill under the line.
+    """
+
+    type: Literal["sparkline"] = "sparkline"
+    data: list[float | int]
+    color: str | None = None
+    height: int = 60
+    show_area: bool = True
+
+    def to_props(self) -> dict[str, Any]:
+        return {
+            "data": self.data,
+            "color": self.color,
+            "height": self.height,
+            "show_area": self.show_area,
+        }
+
+
+class Video(Block):
+    """Video embed block.
+
+    Attributes:
+        src: Video URL or file path.
+        title: Optional video title.
+        poster: Optional poster image URL.
+        autoplay: Whether to autoplay.
+        controls: Whether to show playback controls.
+    """
+
+    type: Literal["video"] = "video"
+    src: str
+    title: str | None = None
+    poster: str | None = None
+    autoplay: bool = False
+    controls: bool = True
+
+    def to_props(self) -> dict[str, Any]:
+        return {
+            "src": self.src,
+            "title": self.title,
+            "poster": self.poster,
+            "autoplay": self.autoplay,
+            "controls": self.controls,
+        }
+
+
+# ---------------------------------------------------------------------------
 # Discriminated union
 # ---------------------------------------------------------------------------
 
@@ -945,7 +1493,28 @@ AnyBlock = Annotated[
     | NumberInput
     | Toggle
     | Accordion
-    | StatComparison,
+    | StatComparison
+    | HeatmapChart
+    | CandlestickChart
+    | SankeyChart
+    | WaterfallChart
+    | BoxPlotChart
+    | MapChart
+    | Timeline
+    | Callout
+    | Embed
+    | JsonViewer
+    | UserCard
+    | StatusList
+    | InfoList
+    | Stepper
+    | Dropdown
+    | TextInput
+    | CheckboxGroup
+    | RadioGroup
+    | TagList
+    | Sparkline
+    | Video,
     Field(discriminator="type"),
 ]
 """Union type of all block models, discriminated on the ``type`` field."""
@@ -955,4 +1524,3 @@ Section.model_rebuild()
 Columns.model_rebuild()
 Tabs.model_rebuild()
 Accordion.model_rebuild()
-
