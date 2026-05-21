@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef, useCallback, useEffect } from 'react';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
@@ -19,6 +19,7 @@ import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useFeatures } from '../FeaturesContext';
+import { useFilters } from '../FilterContext';
 import { downloadCSV } from '../utils/downloadCSV';
 import type { BlockSpec, TableColumnFormatting } from '../types';
 
@@ -29,19 +30,30 @@ interface TableBlockProps {
 
 type Order = 'asc' | 'desc';
 
+// ─── Virtual Scroll Constants ─────────────────────────────────────────────────
+
+const VIRTUAL_THRESHOLD = 200;
+const ROW_HEIGHT = 41; // px per row (MUI small table row)
+const CONTAINER_HEIGHT = 500;
+const OVERSCAN = 10; // extra rows rendered above/below viewport
+
 export const TableBlock: React.FC<TableBlockProps> = ({ block }) => {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const { features } = useFeatures();
+  const { applyFilters } = useFilters();
   const {
     title,
-    data,
+    data: rawData,
     columns: propColumns,
     searchable = true,
     paginated = true,
     downloadable,
     formatting,
   } = block.props;
+
+  // Apply cross-block filters
+  const data = useMemo(() => applyFilters(rawData ?? []), [rawData, applyFilters]);
 
   const showDownload = downloadable === true || features.download_buttons === true;
   const columnFormatting: Record<string, TableColumnFormatting> | undefined = formatting;
@@ -51,6 +63,10 @@ export const TableBlock: React.FC<TableBlockProps> = ({ block }) => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [orderBy, setOrderBy] = useState<string>('');
   const [order, setOrder] = useState<Order>('asc');
+
+  // Virtual scroll state
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [scrollTop, setScrollTop] = useState(0);
 
   const columns: string[] = useMemo(() => {
     if (propColumns && propColumns.length > 0) return propColumns;
@@ -82,9 +98,45 @@ export const TableBlock: React.FC<TableBlockProps> = ({ block }) => {
     });
   }, [filteredData, orderBy, order]);
 
-  const displayData = paginated
-    ? sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-    : sortedData;
+  // Determine if we should use virtual scrolling
+  const useVirtual = sortedData.length > VIRTUAL_THRESHOLD;
+
+  const displayData = useVirtual
+    ? sortedData // virtual mode uses all sorted data
+    : paginated
+      ? sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+      : sortedData;
+
+  // ── Virtual scroll calculations ──
+  const totalHeight = useVirtual ? sortedData.length * ROW_HEIGHT : 0;
+
+  const { startIndex, endIndex, visibleRows } = useMemo(() => {
+    if (!useVirtual) {
+      return { startIndex: 0, endIndex: displayData.length, visibleRows: displayData };
+    }
+    const start = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN);
+    const visibleCount = Math.ceil(CONTAINER_HEIGHT / ROW_HEIGHT) + OVERSCAN * 2;
+    const end = Math.min(sortedData.length, start + visibleCount);
+    return {
+      startIndex: start,
+      endIndex: end,
+      visibleRows: sortedData.slice(start, end),
+    };
+  }, [useVirtual, scrollTop, sortedData, displayData]);
+
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    if (useVirtual) {
+      setScrollTop(e.currentTarget.scrollTop);
+    }
+  }, [useVirtual]);
+
+  // Reset scroll on search change
+  useEffect(() => {
+    if (useVirtual && scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+      setScrollTop(0);
+    }
+  }, [searchTerm, useVirtual]);
 
   const handleSort = (col: string) => {
     const isAsc = orderBy === col && order === 'asc';
@@ -208,6 +260,38 @@ export const TableBlock: React.FC<TableBlockProps> = ({ block }) => {
     downloadCSV(data, filename);
   };
 
+  // ── Header cell styles (shared) ──
+  const headerCellSx = {
+    fontWeight: 700,
+    fontSize: 12,
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.05em',
+    backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)',
+    borderBottom: `2px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+    whiteSpace: 'nowrap' as const,
+  };
+
+  // ── Row styles ──
+  const rowSx = {
+    '&:nth-of-type(even)': {
+      backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.015)',
+    },
+    '&:last-child td': { borderBottom: 0 },
+  };
+
+  // ── Render row helper ──
+  const renderRow = (row: Record<string, any>, idx: number) => (
+    <TableRow key={idx} hover sx={rowSx}>
+      {columns.map((col) => (
+        <TableCell key={col} sx={{ fontSize: 13, py: 1.5 }}>
+          {columnFormatting?.[col]
+            ? renderFormattedCell(col, row[col])
+            : formatValue(row[col])}
+        </TableCell>
+      ))}
+    </TableRow>
+  );
+
   return (
     <Card
       elevation={0}
@@ -277,25 +361,19 @@ export const TableBlock: React.FC<TableBlockProps> = ({ block }) => {
           <Box sx={{ py: 6, textAlign: 'center' }}>
             <Typography variant="body2" color="text.secondary">No data available</Typography>
           </Box>
-        ) : (
+        ) : useVirtual ? (
+          /* ── Virtual Scrolling Mode ── */
           <>
-            <TableContainer sx={{ maxHeight: 500 }}>
-              <Table stickyHeader size="small">
+            <TableContainer
+              ref={scrollContainerRef}
+              onScroll={handleScroll}
+              sx={{ maxHeight: CONTAINER_HEIGHT, overflowY: 'auto' }}
+            >
+              <Table stickyHeader size="small" sx={{ tableLayout: 'fixed' }}>
                 <TableHead>
                   <TableRow>
                     {columns.map((col) => (
-                      <TableCell
-                        key={col}
-                        sx={{
-                          fontWeight: 700,
-                          fontSize: 12,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.05em',
-                          backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)',
-                          borderBottom: `2px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
+                      <TableCell key={col} sx={headerCellSx}>
                         <TableSortLabel
                           active={orderBy === col}
                           direction={orderBy === col ? order : 'asc'}
@@ -308,26 +386,69 @@ export const TableBlock: React.FC<TableBlockProps> = ({ block }) => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {displayData.map((row: Record<string, any>, idx: number) => (
-                    <TableRow
-                      key={idx}
-                      hover
-                      sx={{
-                        '&:nth-of-type(even)': {
-                          backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.015)',
-                        },
-                        '&:last-child td': { borderBottom: 0 },
-                      }}
-                    >
-                      {columns.map((col) => (
-                        <TableCell key={col} sx={{ fontSize: 13, py: 1.5 }}>
-                          {columnFormatting?.[col]
-                            ? renderFormattedCell(col, row[col])
-                            : formatValue(row[col])}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))}
+                  {/* Top spacer */}
+                  {startIndex > 0 && (
+                    <tr style={{ height: startIndex * ROW_HEIGHT }}>
+                      <td colSpan={columns.length} style={{ padding: 0, border: 'none' }} />
+                    </tr>
+                  )}
+                  {/* Visible rows */}
+                  {visibleRows.map((row: Record<string, any>, i: number) =>
+                    renderRow(row, startIndex + i)
+                  )}
+                  {/* Bottom spacer */}
+                  {endIndex < sortedData.length && (
+                    <tr style={{ height: (sortedData.length - endIndex) * ROW_HEIGHT }}>
+                      <td colSpan={columns.length} style={{ padding: 0, border: 'none' }} />
+                    </tr>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            {/* Row count indicator */}
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                px: 2,
+                py: 1.5,
+                borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
+              }}
+            >
+              <Typography variant="caption" color="text.secondary">
+                Showing {sortedData.length.toLocaleString()} of {data.length.toLocaleString()} rows
+                {searchTerm ? ' (filtered)' : ''}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Virtual scroll enabled
+              </Typography>
+            </Box>
+          </>
+        ) : (
+          /* ── Standard Paginated Mode ── */
+          <>
+            <TableContainer sx={{ maxHeight: 500 }}>
+              <Table stickyHeader size="small">
+                <TableHead>
+                  <TableRow>
+                    {columns.map((col) => (
+                      <TableCell key={col} sx={headerCellSx}>
+                        <TableSortLabel
+                          active={orderBy === col}
+                          direction={orderBy === col ? order : 'asc'}
+                          onClick={() => handleSort(col)}
+                        >
+                          {formatHeader(col)}
+                        </TableSortLabel>
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {displayData.map((row: Record<string, any>, idx: number) =>
+                    renderRow(row, idx)
+                  )}
                 </TableBody>
               </Table>
             </TableContainer>

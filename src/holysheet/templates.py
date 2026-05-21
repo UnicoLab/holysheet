@@ -213,7 +213,7 @@ class ExecutiveSummary(Report):
                         status=m.get("status", "neutral"),
                     )
                 )
-            self.add(Columns(children=metric_blocks, layout="equal"))
+            self.add(Columns(children=list(metric_blocks), layout="equal"))
             self.add(Divider())
 
         # Highlights
@@ -310,7 +310,7 @@ class OpsMonitor(Report):
                         unit=m.get("unit"),
                     )
                 )
-            self.add(Columns(children=gauge_blocks, layout="equal"))
+            self.add(Columns(children=list(gauge_blocks), layout="equal"))
 
         # Error rate over time
         if data.get("errors"):

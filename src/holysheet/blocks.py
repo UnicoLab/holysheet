@@ -56,6 +56,36 @@ class Block(BaseModel):
             "props": self.to_props(),
         }
 
+    @staticmethod
+    def _detect_anomalies(
+        records: list[dict[str, Any]], x_col: str | None, y_col: str
+    ) -> list[dict[str, Any]]:
+        """Detect outliers using the IQR method.
+
+        Returns a list of annotation dicts for anomalous values.
+        """
+        values = [r.get(y_col, 0) for r in records if isinstance(r.get(y_col), (int, float))]
+        if len(values) < 4:
+            return []
+        sv = sorted(values)
+        q1 = sv[len(sv) // 4]
+        q3 = sv[3 * len(sv) // 4]
+        iqr = q3 - q1
+        if iqr == 0:
+            return []
+        lower = q1 - 1.5 * iqr
+        upper = q3 + 1.5 * iqr
+        return [
+            {
+                "x": r.get(x_col) if x_col else i,
+                "y": r[y_col],
+                "text": "\u26a0 Anomaly",
+                "color": "#ef4444",
+            }
+            for i, r in enumerate(records)
+            if isinstance(r.get(y_col), (int, float)) and (r[y_col] < lower or r[y_col] > upper)
+        ]
+
 
 # ---------------------------------------------------------------------------
 # KPI & Metric blocks
@@ -155,19 +185,24 @@ class LineChart(Block):
     height: int = 360
     annotations: list[dict[str, Any]] | None = None
     downloadable: bool = False
+    anomaly_detection: bool = False
 
     def to_props(self) -> dict[str, Any]:
         """Return line chart props with data converted to records."""
+        records = to_records(self.data)
         props: dict[str, Any] = {
             "title": self.title,
-            "data": to_records(self.data),
+            "data": records,
             "x": self.x,
             "y": self.y,
             "series": self.series,
             "height": self.height,
         }
-        if self.annotations:
-            props["annotations"] = self.annotations
+        anns = list(self.annotations or [])
+        if self.anomaly_detection and self.y and isinstance(self.y, str):
+            anns.extend(self._detect_anomalies(records, self.x, self.y))
+        if anns:
+            props["annotations"] = anns
         if self.downloadable:
             props["downloadable"] = True
         return props
@@ -196,19 +231,24 @@ class AreaChart(Block):
     height: int = 360
     annotations: list[dict[str, Any]] | None = None
     downloadable: bool = False
+    anomaly_detection: bool = False
 
     def to_props(self) -> dict[str, Any]:
         """Return area chart props with data converted to records."""
+        records = to_records(self.data)
         props: dict[str, Any] = {
             "title": self.title,
-            "data": to_records(self.data),
+            "data": records,
             "x": self.x,
             "y": self.y,
             "series": self.series,
             "height": self.height,
         }
-        if self.annotations:
-            props["annotations"] = self.annotations
+        anns = list(self.annotations or [])
+        if self.anomaly_detection and self.y and isinstance(self.y, str):
+            anns.extend(self._detect_anomalies(records, self.x, self.y))
+        if anns:
+            props["annotations"] = anns
         if self.downloadable:
             props["downloadable"] = True
         return props
@@ -235,19 +275,24 @@ class BarChart(Block):
     height: int = 360
     annotations: list[dict[str, Any]] | None = None
     downloadable: bool = False
+    anomaly_detection: bool = False
 
     def to_props(self) -> dict[str, Any]:
         """Return bar chart props with data converted to records."""
+        records = to_records(self.data)
         props: dict[str, Any] = {
             "title": self.title,
-            "data": to_records(self.data),
+            "data": records,
             "x": self.x,
             "y": self.y,
             "series": self.series,
             "height": self.height,
         }
-        if self.annotations:
-            props["annotations"] = self.annotations
+        anns = list(self.annotations or [])
+        if self.anomaly_detection and self.y and isinstance(self.y, str):
+            anns.extend(self._detect_anomalies(records, self.x, self.y))
+        if anns:
+            props["annotations"] = anns
         if self.downloadable:
             props["downloadable"] = True
         return props
@@ -1706,6 +1751,68 @@ class Compare(Block):
 
 
 # ---------------------------------------------------------------------------
+# SQL block (v0.5.0)
+# ---------------------------------------------------------------------------
+
+
+class SqlBlock(Block):
+    """Client-side SQL query block.
+
+    Displays a SQL query with syntax highlighting and a 'Run' button
+    that executes the query against the provided data in the browser.
+
+    Attributes:
+        query: SQL query string.
+        data: Data source to query against.
+        title: Block title.
+        output: Output mode: ``'table'`` or ``'chart'``.
+    """
+
+    type: Literal["sql_block"] = "sql_block"
+    query: str
+    data: Any = None
+    title: str = "Query Result"
+    output: Literal["table", "chart"] = "table"
+
+    def to_props(self) -> dict[str, Any]:
+        """Return SQL block props with data converted to records."""
+        return {
+            "title": self.title,
+            "query": self.query,
+            "data": to_records(self.data),
+            "output": self.output,
+        }
+
+
+# ---------------------------------------------------------------------------
+# Narration block (v0.5.0)
+# ---------------------------------------------------------------------------
+
+
+class NarrationBlock(Block):
+    """Text-to-speech narration block.
+
+    Renders narration text with a play button that uses the
+    Web Speech API for text-to-speech synthesis.
+
+    Attributes:
+        text: The narration text to display and speak.
+        autoplay: If ``True``, begin speaking on mount.
+    """
+
+    type: Literal["narration"] = "narration"
+    text: str
+    autoplay: bool = False
+
+    def to_props(self) -> dict[str, Any]:
+        """Return narration props."""
+        return {
+            "text": self.text,
+            "autoplay": self.autoplay,
+        }
+
+
+# ---------------------------------------------------------------------------
 # Discriminated union
 # ---------------------------------------------------------------------------
 
@@ -1762,7 +1869,9 @@ AnyBlock = Annotated[
     | CorrelationMatrix
     | Scorecard
     | DataProfile
-    | Compare,
+    | Compare
+    | SqlBlock
+    | NarrationBlock,
     Field(discriminator="type"),
 ]
 """Union type of all block models, discriminated on the ``type`` field."""

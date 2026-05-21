@@ -49,6 +49,7 @@ class ReportSchema(BaseModel):
     features: dict[str, Any] | None = None
     custom_theme: dict[str, Any] | None = None
     expires: str | None = None
+    filters: list[dict[str, Any]] = Field(default_factory=list)
 
     # ------------------------------------------------------------------
     # Serialisation helpers

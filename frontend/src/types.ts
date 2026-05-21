@@ -12,6 +12,7 @@ export interface ReportFeatures {
   download_buttons?: boolean;
   multi_page?: boolean;
   widget_mode?: boolean;
+  pwa_mode?: boolean;
   filters?: Array<{
     key: string;
     type: string;

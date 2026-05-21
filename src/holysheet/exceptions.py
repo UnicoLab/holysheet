@@ -28,7 +28,9 @@ class SchemaValidationError(HolySheetError):
     """
 
     def __init__(
-        self, message: str = "Schema validation failed", errors: list[dict] | None = None
+        self,
+        message: str = "Schema validation failed",
+        errors: list[dict[str, object]] | None = None,
     ) -> None:
         self.errors = errors or []
         super().__init__(message)

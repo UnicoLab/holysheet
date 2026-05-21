@@ -643,7 +643,7 @@ def _load_spec_from_source(source: str) -> dict[str, Any]:
     if path.suffix == ".json":
         try:
             raw = path.read_text(encoding="utf-8")
-            return json.loads(raw)
+            return dict(json.loads(raw))
         except json.JSONDecodeError as exc:
             raise click.ClickException(f"Invalid JSON in {path.name}: {exc}") from exc
 
@@ -668,7 +668,7 @@ def _load_spec_from_source(source: str) -> dict[str, Any]:
         if tmp_json.exists():
             try:
                 raw = tmp_json.read_text(encoding="utf-8")
-                return json.loads(raw)
+                return dict(json.loads(raw))
             except json.JSONDecodeError:
                 pass
             finally:
@@ -677,7 +677,7 @@ def _load_spec_from_source(source: str) -> dict[str, Any]:
         # Try stdout
         if result.stdout.strip():
             try:
-                return json.loads(result.stdout.strip())
+                return dict(json.loads(result.stdout.strip()))
             except json.JSONDecodeError:
                 pass
 
@@ -692,7 +692,7 @@ def _load_spec_from_source(source: str) -> dict[str, Any]:
                 raw = jf.read_text(encoding="utf-8")
                 data = json.loads(raw)
                 if "blocks" in data:
-                    return data
+                    return dict(data)
             except (json.JSONDecodeError, OSError):
                 continue
 
@@ -961,6 +961,97 @@ def diff(file_a: str, file_b: str) -> None:
 def version() -> None:
     """Show the HolySheet version."""
     click.echo(f"holysheet {__version__}")
+
+
+# ---------------------------------------------------------------------------
+# Publish to cloud storage
+# ---------------------------------------------------------------------------
+
+
+@cli.command()
+@click.argument("source", type=click.Path(exists=True))
+@click.option(
+    "--target", "-t", required=True, help="Target URL: s3://bucket/path or gs://bucket/path"
+)
+@click.option("--public", "is_public", is_flag=True, help="Make publicly accessible")
+def publish(source: str, target: str, is_public: bool) -> None:
+    """Upload a report to S3 or Google Cloud Storage.
+
+    Requires boto3 (for S3) or google-cloud-storage (for GCS).
+
+    Examples:
+
+        holysheet publish report.html -t s3://my-bucket/reports/q4.html
+
+        holysheet publish report.html -t gs://my-bucket/reports/q4.html --public
+    """
+    source_path = Path(source).resolve()
+    if not source_path.exists():
+        raise click.ClickException(f"File not found: {source_path}")
+
+    if target.startswith("s3://"):
+        _publish_s3(source_path, target, is_public)
+    elif target.startswith("gs://"):
+        _publish_gcs(source_path, target, is_public)
+    else:
+        raise click.ClickException(
+            f"Unsupported target scheme: {target}\nUse s3://bucket/path or gs://bucket/path"
+        )
+
+
+def _publish_s3(source_path: Path, target: str, is_public: bool) -> None:
+    """Upload to Amazon S3."""
+    try:
+        import boto3
+    except ImportError:
+        raise click.ClickException(
+            "S3 publish requires boto3.\nInstall with:  pip install boto3"
+        ) from None
+
+    # Parse s3://bucket/key
+    parts = target[5:].split("/", 1)
+    bucket = parts[0]
+    key = parts[1] if len(parts) > 1 else source_path.name
+
+    extra_args: dict[str, str] = {"ContentType": "text/html"}
+    if is_public:
+        extra_args["ACL"] = "public-read"
+
+    s3 = boto3.client("s3")
+    s3.upload_file(str(source_path), bucket, key, ExtraArgs=extra_args)
+
+    if is_public:
+        url = f"https://{bucket}.s3.amazonaws.com/{key}"
+        click.secho(f"✅ Published to: {url}", fg="green")
+    else:
+        click.secho(f"✅ Uploaded to s3://{bucket}/{key}", fg="green")
+
+
+def _publish_gcs(source_path: Path, target: str, is_public: bool) -> None:
+    """Upload to Google Cloud Storage."""
+    try:
+        from google.cloud import storage as gcs
+    except ImportError:
+        raise click.ClickException(
+            "GCS publish requires google-cloud-storage.\n"
+            "Install with:  pip install google-cloud-storage"
+        ) from None
+
+    # Parse gs://bucket/path
+    parts = target[5:].split("/", 1)
+    bucket_name = parts[0]
+    blob_name = parts[1] if len(parts) > 1 else source_path.name
+
+    client = gcs.Client()
+    bucket = client.bucket(bucket_name)
+    blob = bucket.blob(blob_name)
+    blob.upload_from_filename(str(source_path), content_type="text/html")
+
+    if is_public:
+        blob.make_public()
+        click.secho(f"✅ Published to: {blob.public_url}", fg="green")
+    else:
+        click.secho(f"✅ Uploaded to gs://{bucket_name}/{blob_name}", fg="green")
 
 
 # ---------------------------------------------------------------------------

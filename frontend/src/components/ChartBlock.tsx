@@ -9,6 +9,7 @@ import Tooltip from '@mui/material/Tooltip';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useFeatures } from '../FeaturesContext';
+import { useFilters } from '../FilterContext';
 import { downloadCSV } from '../utils/downloadCSV';
 import { SkeletonBlock } from './SkeletonBlock';
 import type { BlockSpec } from '../types';
@@ -27,9 +28,13 @@ const accentColors = [
 export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
   const theme = useTheme();
   const { features } = useFeatures();
-  const { title, data, x, y, name, value, series, height = 360, downloadable } = block.props;
+  const { applyFilters } = useFilters();
+  const { title, data: rawData, x, y, name, value, series, height = 360, downloadable } = block.props;
   const isDark = theme.palette.mode === 'dark';
   const accentColor = theme.palette.primary.main;
+
+  // Apply cross-block filters to data
+  const data = useMemo(() => applyFilters(rawData ?? []), [rawData, applyFilters]);
 
   const showDownload = downloadable === true || features.download_buttons === true;
   const isLargeDataset = data && data.length > 100;

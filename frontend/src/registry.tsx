@@ -47,6 +47,8 @@ import { CorrelationMatrixBlock } from './components/CorrelationMatrixBlock';
 import { ScorecardBlock } from './components/ScorecardBlock';
 import { DataProfileBlock } from './components/DataProfileBlock';
 import { CompareBlock } from './components/CompareBlock';
+import { SqlBlock } from './components/SqlBlock';
+import { NarrationBlock } from './components/NarrationBlock';
 import type { BlockSpec } from './types';
 
 // ─── Block Registry ───────────────────────────────────────────────────────────
@@ -105,6 +107,8 @@ export const blockRegistry: Record<string, React.ComponentType<any>> = {
   scorecard: ScorecardBlock,
   data_profile: DataProfileBlock,
   compare: CompareBlock,
+  sql_block: SqlBlock,
+  narration: NarrationBlock,
 };
 
 // ─── Size Categories ──────────────────────────────────────────────────────────
@@ -139,6 +143,7 @@ function getSizeCategory(type: string): SizeCategory {
     case 'gantt_chart':
     case 'dag_chart':
     case 'correlation_matrix':
+    case 'sql_block':
       return 'wide';
     default:
       return 'full';
@@ -244,6 +249,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({ blocks }) => {
     }
     return (
       <motion.div
+        id={block.id ? `block-${block.id}` : undefined}
         custom={0}
         initial="hidden"
         animate="visible"
@@ -284,6 +290,7 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({ blocks }) => {
               }}
             >
               <motion.div
+                id={block.id ? `block-${block.id}` : undefined}
                 custom={originalIndex}
                 initial="hidden"
                 animate="visible"

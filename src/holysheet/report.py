@@ -12,6 +12,7 @@ Example::
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -86,7 +87,7 @@ class Report:
         self._counter: int = 0
 
         # Feature flags
-        self._features = {
+        self._features: dict[str, Any] = {
             "theme_switch": theme_switch,
             "presentation_mode": presentation_mode,
             "download_buttons": download_buttons,
@@ -381,7 +382,7 @@ class Report:
         if block_ids:
             schema.blocks = [b for b in schema.blocks if b.get("id") in block_ids]
         schema.features = schema.features or {}
-        schema.features["widget_mode"] = True  # type: ignore[union-attr]
+        schema.features["widget_mode"] = True
         return export_standalone_html(schema, path)
 
     # ------------------------------------------------------------------
@@ -436,6 +437,141 @@ class Report:
         except ImportError:
             logger.warning("IPython not available. Use export_html() instead.")
             return None
+
+    # ------------------------------------------------------------------
+    # PDF export
+    # ------------------------------------------------------------------
+
+    def export_pdf(
+        self,
+        path: str | Path,
+        *,
+        width: str = "A4",
+        landscape: bool = False,
+        margin: str = "1cm",
+    ) -> Path:
+        """Export the report as a PDF file.
+
+        Requires ``playwright`` to be installed::
+
+            pip install playwright && playwright install chromium
+
+        Args:
+            path: Output PDF file path.
+            width: Paper format (``A4``, ``Letter``, etc.).
+            landscape: Landscape orientation.
+            margin: Page margins (e.g. ``1cm``, ``0.5in``).
+
+        Returns:
+            Resolved path to the generated PDF.
+
+        Raises:
+            RuntimeError: If no headless browser is available.
+        """
+        import subprocess
+        import tempfile
+
+        out_path = Path(path).resolve()
+
+        # Generate HTML to a temp file first
+        tmp_html = Path(tempfile.mktemp(suffix=".html", prefix="holysheet_pdf_"))
+        try:
+            self.export_html(tmp_html)
+
+            # Try Playwright first
+            try:
+                import playwright  # noqa: F401
+
+                cmd = [
+                    sys.executable,
+                    "-c",
+                    (
+                        "from playwright.sync_api import sync_playwright; "
+                        "p = sync_playwright().start(); "
+                        f"b = p.chromium.launch(); pg = b.new_page(); "
+                        f"pg.goto('file://{tmp_html}'); "
+                        f"pg.pdf(path='{out_path}', "
+                        f"format='{width}', "
+                        f"landscape={landscape}, "
+                        f"margin={{'top': '{margin}', 'right': '{margin}', "
+                        f"'bottom': '{margin}', 'left': '{margin}'}}); "
+                        "b.close(); p.stop()"
+                    ),
+                ]
+                subprocess.run(cmd, check=True, capture_output=True, text=True)
+                logger.info("PDF exported via Playwright → {}", out_path)
+                return out_path
+            except ImportError:
+                pass
+
+            # Fallback: headless Chrome
+            chrome_candidates = [
+                "google-chrome",
+                "chromium-browser",
+                "chromium",
+                "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+            ]
+            for chrome in chrome_candidates:
+                try:
+                    subprocess.run(
+                        [
+                            chrome,
+                            "--headless",
+                            "--disable-gpu",
+                            f"--print-to-pdf={out_path}",
+                            "--print-to-pdf-no-header",
+                            str(tmp_html),
+                        ],
+                        check=True,
+                        capture_output=True,
+                    )
+                    logger.info("PDF exported via Chrome → {}", out_path)
+                    return out_path
+                except (FileNotFoundError, subprocess.CalledProcessError):
+                    continue
+
+            msg = (
+                "PDF export requires a headless browser.\n"
+                "Install Playwright:  pip install playwright && playwright install chromium\n"
+                "Or install Chrome/Chromium system-wide."
+            )
+            raise RuntimeError(msg)
+        finally:
+            tmp_html.unlink(missing_ok=True)
+
+    # ------------------------------------------------------------------
+    # Auto-narration
+    # ------------------------------------------------------------------
+
+    def auto_narrate(self) -> str:
+        """Generate narration text from KPIs and chart titles.
+
+        Creates a human-readable summary of all KPI values and chart titles
+        in the report — useful for accessibility or voice readback.
+
+        Returns:
+            Plain text narration string.
+        """
+        from holysheet.blocks import KPI
+
+        parts: list[str] = [f"Report: {self.title}."]
+        blocks = self._blocks
+        if self._pages:
+            for page in self._pages:
+                blocks = [*blocks, *page.get("blocks", [])]
+
+        for block in blocks:
+            if isinstance(block, KPI):
+                part = f"{block.label} is {block.value}"
+                if block.unit:
+                    part += f" {block.unit}"
+                if block.delta:
+                    part += f", with a change of {block.delta}"
+                parts.append(part + ".")
+            elif hasattr(block, "title") and block.title:
+                parts.append(f"{block.title}.")
+
+        return " ".join(parts)
 
     # ------------------------------------------------------------------
     # Dunder
