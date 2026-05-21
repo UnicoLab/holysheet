@@ -126,8 +126,17 @@ pip install holysheet
 # With Pandas support
 pip install holysheet[pandas]
 
-# With Polars support
-pip install holysheet[polars]
+# With PDF export
+pip install holysheet[pdf]
+
+# With AI insights (OpenAI / Anthropic / Google)
+pip install holysheet[ai]
+
+# With cloud publishing (S3 / GCS)
+pip install holysheet[cloud]
+
+# With Google Sheets data source
+pip install holysheet[gsheets]
 
 # Everything
 pip install holysheet[all]
@@ -145,7 +154,7 @@ pip install holysheet[all]
 
 ## 🧱 Block Reference
 
-HolySheet ships with **53 block types** organized into six categories:
+HolySheet ships with **57 block types** organized into seven categories:
 
 ### 📊 Charts (18)
 
@@ -169,6 +178,14 @@ HolySheet ships with **53 block types** organized into six categories:
 | `GanttChart` | Project timeline 🆕 | `tasks` `[{name, start, end, progress}]` |
 | `DAGChart` | Directed acyclic graph 🆕 | `nodes`, `edges`, `layout` |
 | `CorrelationMatrix` | Correlation heatmap 🆕 | `matrix`, `labels` |
+
+### 🧠 AI & Data Sources (3)
+
+| Block | Description | Key Props |
+|---|---|---|
+| `AIInsight` | LLM-powered data narrative 🆕 | `data`, `provider`, `prompt`, `api_key` |
+| `GoogleSheet` | Google Sheets data source 🆕 | `spreadsheet_id`, `sheet_name`, `range` |
+| `SqlBlock` | Client-side SQL queries 🆕 | `query`, `data`, `output` |
 
 ### 📈 Metrics (6)
 
@@ -197,6 +214,7 @@ HolySheet ships with **53 block types** organized into six categories:
 | `StatusList` | Status indicators list | `items` `[{label, status, value}]` |
 | `InfoList` | Key-value pair display | `items` `[{key, value, icon}]` |
 | `Sparkline` | Tiny inline chart | `data`, `color`, `show_area` |
+| `NarrationBlock` | Voice narration (Web Speech API) 🆕 | `text`, `autoplay` |
 
 ### 📐 Layout (8)
 
@@ -372,6 +390,14 @@ dist/
 
 Ideal for hosting on a web server, S3, or CDN.
 
+### PDF Export
+
+```python
+report.export_pdf("report.pdf", landscape=True, margin="0.5in")
+```
+
+Requires Playwright (`pip install holysheet[pdf]`) or Chrome/Chromium.
+
 ### JSON Export
 
 ```python
@@ -426,6 +452,10 @@ holysheet diff old_report.json new_report.json
 
 # Show version
 holysheet version
+
+# Publish to S3 or Google Cloud Storage
+holysheet publish report.html -t s3://my-bucket/reports/q4.html --public
+holysheet publish report.html -t gs://my-bucket/reports/q4.html
 ```
 
 ---
@@ -482,6 +512,39 @@ Report(title="Temp", expires="2025-12-31")  # Auto-expires
 from holysheet.templates import SalesDashboard, ExecutiveSummary, OpsMonitor
 
 blocks = SalesDashboard(data={"kpis": {"revenue": "$1.2M", "deals_won": 42}})
+```
+
+### Anomaly Detection
+
+```python
+report.add(LineChart(
+    title="Server Latency", data=metrics, x="time", y="latency_ms",
+    anomaly_detection=True,  # Auto-detect and annotate outliers
+))
+```
+
+### AI-Powered Insights
+
+```python
+from holysheet import AIInsight
+report.add(AIInsight(title="Key Findings", data=df, provider="openai"))
+```
+
+### SQL Block
+
+```python
+from holysheet import SqlBlock
+report.add(SqlBlock(
+    query="SELECT region, SUM(revenue) FROM data GROUP BY region",
+    data=sales_df,
+))
+```
+
+### Voice Narration
+
+```python
+from holysheet import NarrationBlock
+report.add(NarrationBlock(text=report.auto_narrate()))
 ```
 
 ---
@@ -602,8 +665,17 @@ HolySheet uses [python-semantic-release](https://github.com/python-semantic-rele
 - [x] 🌗 Dark/Light theme toggle in viewer
 - [x] 🏗️ Report templates (SalesDashboard, ExecutiveSummary, OpsMonitor)
 - [x] 🔧 Hot-reload dev server + report linting + report diff CLI
-- [ ] 🤖 AI narrative blocks (auto-generated insights)
-- [ ] 📄 PDF export
+- [x] 🤖 AI narrative blocks (AIInsight with OpenAI / Anthropic / Google)
+- [x] 📄 PDF export (Playwright / Chrome)
+- [x] 🗄️ SQL Block (client-side query engine)
+- [x] 🔊 Voice narration (Web Speech API)
+- [x] 📈 Anomaly detection on charts (IQR + MAD)
+- [x] ☁️ Cloud publish CLI (S3 / GCS)
+- [x] 📊 Google Sheets data source
+- [x] 🔄 Cross-block reactive filtering
+- [x] 📜 Virtual scrolling for large tables
+- [x] 🗺️ Report navigator (minimap)
+- [x] 📱 PWA mode + responsive layouts
 - [ ] 📊 PowerPoint export
 - [ ] 🧩 Custom React component injection
 - [ ] 💬 Local chatbot over report data

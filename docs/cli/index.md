@@ -280,6 +280,53 @@ Summary: 1 removed, 2 added, 1 changed (A: 4 blocks → B: 5 blocks)
 
 ---
 
+## publish :material-new-box:{ .new-badge }
+
+Upload a generated HTML report to cloud storage (Amazon S3 or Google Cloud Storage).
+
+```bash
+holysheet publish HTML_FILE -t TARGET [OPTIONS]
+```
+
+### Arguments
+
+| Argument | Description |
+|:---------|:------------|
+| `HTML_FILE` | Path to the generated HTML report file |
+
+### Options
+
+| Option | Default | Description |
+|:-------|:--------|:------------|
+| `--target`, `-t` | *required* | Cloud target URL (`s3://bucket/key` or `gs://bucket/key`) |
+| `--public` | `False` | Make the uploaded file publicly readable |
+
+### Examples
+
+```bash
+# Publish to Amazon S3
+$ holysheet publish report.html -t s3://my-reports/q4/dashboard.html --public
+✅ Published → https://my-reports.s3.amazonaws.com/q4/dashboard.html
+
+# Publish to Google Cloud Storage
+$ holysheet publish report.html -t gs://my-bucket/reports/q4.html
+✅ Published → gs://my-bucket/reports/q4.html
+```
+
+### Requirements
+
+| Provider | SDK | Credentials |
+|:---------|:----|:------------|
+| **S3** | `pip install boto3` | AWS credentials configured (env vars or `~/.aws/credentials`) |
+| **GCS** | `pip install google-cloud-storage` | `GOOGLE_APPLICATION_CREDENTIALS` env var |
+
+!!! tip "One-liner Deploy"
+    ```bash
+    python my_report.py && holysheet publish report.html -t s3://my-bucket/reports/latest.html --public
+    ```
+
+---
+
 ## :bulb: CLI Tips
 
 ### Verbose Mode

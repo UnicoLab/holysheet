@@ -838,3 +838,136 @@ Video(
 )
 ```
 
+
+---
+
+## SqlBlock
+
+:material-database-search: Client-side SQL query block. Displays a SQL query with syntax highlighting and a "Run" button that executes queries against the block's data directly in the browser.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `query` | `str` | *required* | SQL query string |
+| `data` | `Any` | `None` | Data source to query against |
+| `title` | `str` | `"Query Result"` | Block title |
+| `output` | `Literal["table", "chart"]` | `"table"` | Output mode |
+
+### Example
+
+```python title="sql_block.py"
+from holysheet import SqlBlock
+
+SqlBlock(
+    title="Revenue by Region",
+    query="SELECT region, SUM(revenue) as total FROM data GROUP BY region ORDER BY total DESC",
+    data=[
+        {"region": "US", "revenue": 120000},
+        {"region": "EU", "revenue": 95000},
+        {"region": "APAC", "revenue": 78000},
+    ],
+)
+```
+
+!!! note "Supported SQL"
+    The client-side engine supports `SELECT`, `WHERE` (=, >, <, >=, <=, <>, LIKE), `GROUP BY` with aggregates (`COUNT`, `SUM`, `AVG`, `MIN`, `MAX`), `ORDER BY`, and `LIMIT`.
+
+---
+
+## NarrationBlock
+
+:material-microphone: Text-to-speech narration block using the Web Speech API.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `text` | `str` | *required* | The narration text |
+| `autoplay` | `bool` | `False` | Start speaking on page load |
+
+### Example
+
+```python title="narration.py"
+from holysheet import NarrationBlock
+
+NarrationBlock(
+    text="Revenue grew 22% quarter-over-quarter, driven by enterprise accounts.",
+    autoplay=False,
+)
+```
+
+!!! tip "Auto-Narrate"
+    Use `report.auto_narrate()` to automatically generate narration text from KPIs and chart titles:
+    ```python
+    report.add(NarrationBlock(text=report.auto_narrate()))
+    ```
+
+---
+
+## AIInsight
+
+:material-brain: AI-generated narrative insight block. Uses an LLM provider to generate textual insights from data at **build time**.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `data` | `Any` | `None` | Data to analyse |
+| `title` | `str` | `"AI Insight"` | Block title |
+| `provider` | `Literal["openai", "anthropic", "google"]` | `"openai"` | LLM provider |
+| `prompt` | `str \| None` | `None` | Custom analysis prompt |
+| `api_key` | `str \| None` | `None` | API key (or use env var) |
+
+### Example
+
+```python title="ai_insight.py"
+from holysheet import AIInsight
+
+AIInsight(
+    title="Revenue Trends",
+    data=revenue_df,
+    provider="openai",
+)
+```
+
+!!! note "Installation"
+    Install the provider SDK: `pip install holysheet[ai]` or individually:
+
+    - OpenAI: `pip install openai` + set `OPENAI_API_KEY`
+    - Anthropic: `pip install anthropic` + set `ANTHROPIC_API_KEY`
+    - Google: `pip install google-generativeai` + set `GOOGLE_API_KEY`
+
+---
+
+## GoogleSheet
+
+:material-google-spreadsheet: Data source block that fetches data from a Google Sheet at build time.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `spreadsheet_id` | `str` | *required* | Google Sheet ID (from URL) |
+| `sheet_name` | `str \| None` | `None` | Specific tab name |
+| `title` | `str` | `"Google Sheet"` | Block title |
+| `credentials_path` | `str \| None` | `None` | Path to service account JSON |
+| `range` | `str \| None` | `None` | A1 notation range |
+
+### Example
+
+```python title="google_sheet.py"
+from holysheet import GoogleSheet
+
+GoogleSheet(
+    spreadsheet_id="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms",
+    sheet_name="Q4 Data",
+    title="Sales by Region",
+)
+```
+
+!!! note "Installation"
+    ```bash
+    pip install holysheet[gsheets]
+    ```
+    Set `GOOGLE_APPLICATION_CREDENTIALS` to your service account JSON path.

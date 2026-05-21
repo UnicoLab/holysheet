@@ -49,6 +49,8 @@ import { DataProfileBlock } from './components/DataProfileBlock';
 import { CompareBlock } from './components/CompareBlock';
 import { SqlBlock } from './components/SqlBlock';
 import { NarrationBlock } from './components/NarrationBlock';
+import { AIInsightBlock } from './components/AIInsightBlock';
+import { GoogleSheetBlock } from './components/GoogleSheetBlock';
 import type { BlockSpec } from './types';
 
 // ─── Block Registry ───────────────────────────────────────────────────────────
@@ -109,6 +111,9 @@ export const blockRegistry: Record<string, React.ComponentType<any>> = {
   compare: CompareBlock,
   sql_block: SqlBlock,
   narration: NarrationBlock,
+  // Integration blocks
+  ai_insight: AIInsightBlock,
+  google_sheet: GoogleSheetBlock,
 };
 
 // ─── Size Categories ──────────────────────────────────────────────────────────
@@ -144,7 +149,10 @@ function getSizeCategory(type: string): SizeCategory {
     case 'dag_chart':
     case 'correlation_matrix':
     case 'sql_block':
+    case 'google_sheet':
       return 'wide';
+    case 'ai_insight':
+      return 'full';
     default:
       return 'full';
   }

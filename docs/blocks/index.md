@@ -1,6 +1,6 @@
 # Block Types Overview
 
-HolySheet ships with **53 block types** organized into five categories. Each block is a Pydantic v2 model with full type safety and validation.
+HolySheet ships with **57 block types** organized into six categories. Each block is a Pydantic v2 model with full type safety and validation.
 
 ---
 
@@ -115,6 +115,6 @@ report.export_html("dashboard.html")
 
 - **[KPI & Metrics](kpi-metrics.md)** — KPI cards, compact metrics, stat comparisons
 - **[Charts](charts.md)** — All 18 chart types with data format examples
-- **[Data & Content](data-content.md)** — Tables, markdown, code, images, alerts, timelines, scorecards, and more
+- **[Data & Content](data-content.md)** — Tables, markdown, code, images, alerts, timelines, scorecards, SQL blocks, narration, AI insights, and Google Sheets
 - **[Layout](layout.md)** — Columns, sections, tabs, dividers, accordions, compare containers
 - **[Interactive](interactive.md)** — Sliders, toggles, dropdowns, text inputs, checkboxes, and radio buttons

@@ -20,6 +20,10 @@ keywords = [
     "html",
     "data",
     "analytics",
+    "pdf",
+    "ai",
+    "cloud",
+    "jupyter",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -45,7 +49,22 @@ dependencies = [
 [project.optional-dependencies]
 pandas = ["pandas>=2.0"]
 polars = ["polars>=0.20"]
-all = ["pandas>=2.0", "polars>=0.20"]
+pdf = ["playwright>=1.40"]
+ai = ["openai>=1.0", "anthropic>=0.20", "google-generativeai>=0.5"]
+cloud = ["boto3>=1.28", "google-cloud-storage>=2.10"]
+gsheets = ["gspread>=6.0", "google-auth>=2.20"]
+all = [
+    "pandas>=2.0",
+    "polars>=0.20",
+    "playwright>=1.40",
+    "openai>=1.0",
+    "anthropic>=0.20",
+    "google-generativeai>=0.5",
+    "boto3>=1.28",
+    "google-cloud-storage>=2.10",
+    "gspread>=6.0",
+    "google-auth>=2.20",
+]
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",

@@ -1,5 +1,37 @@
 # CHANGELOG
 
+## v0.5.0 (2026-05-21)
+
+### Features
+
+- **AI Insight Block**: LLM-powered data narratives with OpenAI, Anthropic, and Google provider support
+- **Google Sheets Data Source**: Live data fetching from Google Sheets via gspread
+- **PDF Export**: `report.export_pdf()` with Playwright and Chrome headless browser fallback
+- **Anomaly Detection**: IQR-based outlier detection with MAD fallback on LineChart, AreaChart, BarChart
+- **SQL Block**: Client-side SQL engine supporting SELECT, WHERE, GROUP BY, ORDER BY, LIMIT
+- **Narration Block**: Web Speech API text-to-speech with autoplay support
+- **Auto-Narrate**: `report.auto_narrate()` generates plain text summaries from KPIs
+- **Cloud Publish CLI**: `holysheet publish` command for S3 and GCS deployment
+- **Cross-Block Filtering**: Reactive FilterBar with dropdown, text, date_range, and checkbox filter types
+- **Virtual Scrolling**: Tables with >200 rows auto-switch to virtualized rendering
+- **Report Navigator**: Floating minimap drawer with IntersectionObserver scroll tracking
+- **PWA Mode**: Installable dashboard with service worker and web manifest injection
+- **Responsive Layouts**: Breakpoint-aware column layouts (desktop/tablet/mobile)
+
+### Improvements
+
+- 57 block types (was 53)
+- 8 CLI commands (was 7): added `publish`
+- 311 tests (was 278)
+- Release workflow is now manual-only (`workflow_dispatch`)
+- Fixed 10 mypy type errors across 4 source files
+- Fixed mkdocs nav reference for templates documentation
+
+### Dependencies
+
+- New optional dependency groups: `pdf`, `ai`, `cloud`, `gsheets`
+- Install extras: `pip install holysheet[pdf]`, `pip install holysheet[ai]`, etc.
+
 
 ## v0.2.1 (2026-05-21)
 
