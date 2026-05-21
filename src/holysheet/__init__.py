@@ -17,6 +17,7 @@ from __future__ import annotations
 from holysheet.blocks import (
     KPI,
     Accordion,
+    AIInsight,
     Alert,
     AreaChart,
     BarChart,
@@ -37,6 +38,7 @@ from holysheet.blocks import (
     FunnelChart,
     GanttChart,
     GaugeChart,
+    GoogleSheet,
     HeatmapChart,
     Image,
     InfoList,
@@ -77,8 +79,9 @@ from holysheet.themes import Theme
 __version__ = "0.4.0"
 
 __all__ = [
-    # KPI & Metrics
     "KPI",
+    # KPI & Metrics
+    "AIInsight",
     "Accordion",
     "Alert",
     "AreaChart",
@@ -101,6 +104,7 @@ __all__ = [
     "FunnelChart",
     "GanttChart",
     "GaugeChart",
+    "GoogleSheet",
     "HeatmapChart",
     "Image",
     "InfoList",

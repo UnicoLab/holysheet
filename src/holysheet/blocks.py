@@ -72,9 +72,20 @@ class Block(BaseModel):
         q3 = sv[3 * len(sv) // 4]
         iqr = q3 - q1
         if iqr == 0:
-            return []
-        lower = q1 - 1.5 * iqr
-        upper = q3 + 1.5 * iqr
+            # Fallback: use median ± 3 * MAD (Median Absolute Deviation)
+            median = sv[len(sv) // 2]
+            deviations = sorted(abs(v - median) for v in values)
+            mad = deviations[len(deviations) // 2]
+            if mad == 0:
+                # All truly identical except exact outliers → flag anything ≠ median
+                lower = median
+                upper = median
+            else:
+                lower = median - 3 * mad
+                upper = median + 3 * mad
+        else:
+            lower = q1 - 1.5 * iqr
+            upper = q3 + 1.5 * iqr
         return [
             {
                 "x": r.get(x_col) if x_col else i,
@@ -1813,6 +1824,201 @@ class NarrationBlock(Block):
 
 
 # ---------------------------------------------------------------------------
+# AI Insight block (v0.5.0)
+# ---------------------------------------------------------------------------
+
+
+class AIInsight(Block):
+    """AI-generated narrative insight block.
+
+    Uses an LLM provider to automatically generate textual insights
+    from the provided data.  The generation happens at **build time**
+    (when ``to_props()`` is called), so no API key is needed in the
+    browser.
+
+    Supported providers: ``openai``, ``anthropic``, ``google``.
+
+    Attributes:
+        data: Data to analyse (DataFrame, list of dicts, etc.).
+        prompt: Optional custom prompt template.
+        provider: LLM provider name (default ``"openai"``).
+        model: Model name (defaults per provider).
+        title: Block title.
+        api_key: Explicit API key (if not set via env var).
+    """
+
+    type: Literal["ai_insight"] = "ai_insight"
+    data: Any = None
+    prompt: str | None = None
+    provider: Literal["openai", "anthropic", "google"] = "openai"
+    model: str | None = None
+    title: str = "AI Insight"
+    api_key: str | None = None
+
+    def _generate_insight(self, records: list[dict[str, Any]]) -> str:
+        """Call the configured LLM to generate an insight narrative."""
+        import os
+
+        # Build a data summary (first 20 rows, column names)
+        cols = list(records[0].keys()) if records else []
+        sample = records[:20]
+        data_summary = f"Columns: {', '.join(cols)}\nRows: {len(records)}\nSample:\n"
+        for row in sample[:5]:
+            data_summary += str(row) + "\n"
+
+        default_prompt = (
+            "You are a data analyst. Analyse the following data and provide "
+            "a concise 2-3 sentence insight highlighting key trends, anomalies, "
+            "or actionable findings.\n\n"
+            f"Data summary:\n{data_summary}"
+        )
+        user_prompt = self.prompt or default_prompt
+
+        if self.provider == "openai":
+            return self._call_openai(
+                user_prompt, os.environ.get("OPENAI_API_KEY", self.api_key or "")
+            )
+        elif self.provider == "anthropic":
+            return self._call_anthropic(
+                user_prompt, os.environ.get("ANTHROPIC_API_KEY", self.api_key or "")
+            )
+        elif self.provider == "google":
+            return self._call_google(
+                user_prompt, os.environ.get("GOOGLE_API_KEY", self.api_key or "")
+            )
+        return f"[AI Insight unavailable — unknown provider: {self.provider}]"
+
+    @staticmethod
+    def _call_openai(prompt: str, api_key: str) -> str:
+        try:
+            import openai
+
+            client = openai.OpenAI(api_key=api_key)
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=300,
+            )
+            return response.choices[0].message.content or "[No response]"
+        except ImportError:
+            return "[AI Insight requires: pip install openai]"
+        except Exception as exc:
+            return f"[AI Insight error: {exc}]"
+
+    @staticmethod
+    def _call_anthropic(prompt: str, api_key: str) -> str:
+        try:
+            import anthropic
+
+            client = anthropic.Anthropic(api_key=api_key)
+            response = client.messages.create(
+                model="claude-sonnet-4-20250514",
+                max_tokens=300,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            return response.content[0].text if response.content else "[No response]"
+        except ImportError:
+            return "[AI Insight requires: pip install anthropic]"
+        except Exception as exc:
+            return f"[AI Insight error: {exc}]"
+
+    @staticmethod
+    def _call_google(prompt: str, api_key: str) -> str:
+        try:
+            import google.generativeai as genai
+
+            genai.configure(api_key=api_key)
+            model = genai.GenerativeModel("gemini-1.5-flash")
+            response = model.generate_content(prompt)
+            return response.text or "[No response]"
+        except ImportError:
+            return "[AI Insight requires: pip install google-generativeai]"
+        except Exception as exc:
+            return f"[AI Insight error: {exc}]"
+
+    def to_props(self) -> dict[str, Any]:
+        """Generate insight and return props."""
+        records = to_records(self.data)
+        try:
+            insight_text = self._generate_insight(records)
+        except Exception as exc:
+            insight_text = f"[AI Insight generation failed: {exc}]"
+        return {
+            "title": self.title,
+            "text": insight_text,
+            "provider": self.provider,
+        }
+
+
+# ---------------------------------------------------------------------------
+# Google Sheets data source block (v0.5.0)
+# ---------------------------------------------------------------------------
+
+
+class GoogleSheet(Block):
+    """Data source block that loads data from a Google Sheet.
+
+    Fetches data from a Google Sheet at **build time** (when ``to_props()``
+    is called) and renders it as a DataTable.
+
+    Requires ``gspread`` and either a service account JSON or OAuth.
+
+    Attributes:
+        spreadsheet_id: Google Sheet ID (from the URL).
+        sheet_name: Specific sheet/tab name (default first sheet).
+        title: Block title.
+        credentials_path: Path to service account JSON file.
+        range: Optional A1 notation range (e.g. ``'A1:D100'``).
+    """
+
+    type: Literal["google_sheet"] = "google_sheet"
+    spreadsheet_id: str
+    sheet_name: str | None = None
+    title: str = "Google Sheet"
+    credentials_path: str | None = None
+    range: str | None = None
+
+    def _fetch_data(self) -> list[dict[str, Any]]:
+        """Fetch data from Google Sheets using gspread."""
+        import os
+
+        try:
+            import gspread
+        except ImportError:
+            return [{"error": "Requires: pip install gspread google-auth"}]
+
+        try:
+            creds_path = self.credentials_path or os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+            if creds_path:
+                gc = gspread.service_account(filename=creds_path)
+            else:
+                gc = gspread.service_account()
+
+            spreadsheet = gc.open_by_key(self.spreadsheet_id)
+            if self.sheet_name:
+                worksheet = spreadsheet.worksheet(self.sheet_name)
+            else:
+                worksheet = spreadsheet.sheet1
+
+            if self.range:
+                return list(worksheet.get(self.range))
+            return list(worksheet.get_all_records())
+        except Exception as exc:
+            return [{"error": f"Google Sheets fetch failed: {exc}"}]
+
+    def to_props(self) -> dict[str, Any]:
+        """Fetch sheet data and return as table props."""
+        records = self._fetch_data()
+        return {
+            "title": self.title,
+            "data": records,
+            "searchable": True,
+            "paginated": True,
+            "source": f"Google Sheet: {self.spreadsheet_id}",
+        }
+
+
+# ---------------------------------------------------------------------------
 # Discriminated union
 # ---------------------------------------------------------------------------
 
@@ -1871,7 +2077,9 @@ AnyBlock = Annotated[
     | DataProfile
     | Compare
     | SqlBlock
-    | NarrationBlock,
+    | NarrationBlock
+    | AIInsight
+    | GoogleSheet,
     Field(discriminator="type"),
 ]
 """Union type of all block models, discriminated on the ``type`` field."""
