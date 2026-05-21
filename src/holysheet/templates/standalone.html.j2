@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ title | default("HolySheet Report", true) }}</title>
+    <style>
+{{ css_content }}
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script>
+        window.__HOLYSHEET_SPEC__ = {{ json_spec }};
+    </script>
+
+    <script>
+{{ js_content }}
+    </script>
+</body>
+</html>

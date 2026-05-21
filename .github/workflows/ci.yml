@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build frontend
+        run: |
+          cd frontend && npm ci && npm run build && cd ..
+          mkdir -p src/holysheet/renderer/assets
+          cp frontend/dist/index.html src/holysheet/renderer/index.html
+          cp frontend/dist/assets/*.js src/holysheet/renderer/assets/app.js
+          cp frontend/dist/assets/*.css src/holysheet/renderer/assets/app.css 2>/dev/null || touch src/holysheet/renderer/assets/app.css
+
+      - name: Install dependencies
+        run: uv pip install --system -e ".[dev]"
+
+      - name: Lint
+        run: ruff check src/ tests/ examples/
+
+      - name: Format check
+        run: ruff format --check src/ tests/ examples/
+
+      - name: Type check
+        run: mypy src/holysheet/ --ignore-missing-imports
+
+      - name: Run tests
+        run: pytest tests/ -v --tb=short
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build frontend
+        run: |
+          cd frontend && npm ci && npm run build && cd ..
+          mkdir -p src/holysheet/renderer/assets
+          cp frontend/dist/index.html src/holysheet/renderer/index.html
+          cp frontend/dist/assets/*.js src/holysheet/renderer/assets/app.js
+          cp frontend/dist/assets/*.css src/holysheet/renderer/assets/app.css 2>/dev/null || touch src/holysheet/renderer/assets/app.css
+
+      - name: Build package
+        run: |
+          uv pip install --system build
+          python -m build
+
+      - name: Verify wheel contents
+        run: |
+          pip install dist/*.whl
+          python -c "
+          import holysheet
+          from pathlib import Path
+          import importlib.resources as res
+          print(f'Version: {holysheet.__version__}')
+          pkg_dir = Path(holysheet.__file__).parent
+          assert (pkg_dir / 'renderer' / 'assets' / 'app.js').exists(), 'app.js missing from wheel!'
+          assert (pkg_dir / 'templates' / 'standalone.html.j2').exists(), 'template missing from wheel!'
+          print('✓ All assets verified in wheel')
+          "
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/

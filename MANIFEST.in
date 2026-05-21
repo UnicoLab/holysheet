@@ -1,0 +1,4 @@
+recursive-include src/holysheet/renderer *
+recursive-include src/holysheet/templates *
+include LICENSE
+include README.md

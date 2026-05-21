@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+*.whl
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Ruff
+.ruff_cache/
+
+# Environment
+.env
+.env.local
+
+# Generated reports
+*.html
+!src/holysheet/renderer/index.html
+!src/holysheet/templates/*.html.j2
+!frontend/index.html
+
+# Generated data
+basic_report.json

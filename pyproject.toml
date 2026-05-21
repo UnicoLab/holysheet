@@ -1,0 +1,128 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "holysheet"
+version = "0.2.0"
+description = "Python-first report compiler that generates beautiful, portable, interactive React dashboards."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [
+    { name = "UnicoLab", email = "contact@unicolab.com" },
+]
+keywords = [
+    "dashboard",
+    "report",
+    "react",
+    "visualization",
+    "html",
+    "data",
+    "analytics",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Visualization",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+dependencies = [
+    "pydantic>=2.0,<3.0",
+    "jinja2>=3.1,<4.0",
+    "orjson>=3.9,<4.0",
+    "loguru>=0.7,<1.0",
+    "click>=8.1,<9.0",
+]
+
+[project.optional-dependencies]
+pandas = ["pandas>=2.0"]
+polars = ["polars>=0.20"]
+all = ["pandas>=2.0", "polars>=0.20"]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.4",
+    "mypy>=1.10",
+    "pandas>=2.0",
+    "polars>=0.20",
+    "numpy>=1.26",
+    "python-semantic-release>=9.0",
+]
+
+[project.scripts]
+holysheet = "holysheet.cli:cli"
+
+[project.urls]
+Homepage = "https://github.com/UnicoLab/HolySheet"
+Documentation = "https://github.com/UnicoLab/HolySheet#readme"
+Repository = "https://github.com/UnicoLab/HolySheet"
+Issues = "https://github.com/UnicoLab/HolySheet/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/holysheet"]
+
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["src"]
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "W",
+    "I",
+    "N",
+    "UP",
+    "B",
+    "A",
+    "RUF",
+]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["holysheet"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+module = [
+    "pandas.*",
+    "polars.*",
+    "orjson.*",
+    "loguru.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+version_variable = ["src/holysheet/__init__.py:__version__"]
+branch = "main"
+commit_message = "chore(release): v{version} [skip ci]"
+build_command = "pip install build && python -m build"
+upload_to_pypi = true
+upload_to_release = true
+tag_format = "v{version}"
+
+[tool.semantic_release.commit_parser_options]
+allowed_tags = ["feat", "fix", "perf", "refactor", "chore", "docs", "style", "test", "ci", "build"]
+major_tags = ["BREAKING CHANGE"]
+minor_tags = ["feat"]
+patch_tags = ["fix", "perf"]
