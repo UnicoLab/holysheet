@@ -1,6 +1,36 @@
 # CHANGELOG
 
 
+## v0.2.0 (2026-05-21)
+
+### Features
+
+- Add 21 new block types (47 total) + comprehensive docs
+  ([`484e2c7`](https://github.com/UnicoLab/holysheet/commit/484e2c7159f893645b9783d34850e36b567979bc))
+
+New chart blocks: - HeatmapChart: 2D heatmap with color gradient visualization - CandlestickChart:
+  Financial OHLC candlestick charts - SankeyChart: Flow/energy diagrams - WaterfallChart: Revenue
+  bridge / waterfall analysis - BoxPlotChart: Statistical distribution visualization - MapChart:
+  Geographical scatter plots
+
+New content blocks: - Timeline: Vertical event/milestone timeline - Callout: Styled quotes and
+  highlights (3 variants) - Embed: iframe embedding with aspect ratio support - JsonViewer:
+  Interactive JSON tree with collapsible levels - UserCard: Team member cards with avatar and stats
+  - StatusList: Service health indicators with colored dots - InfoList: Key-value pair display -
+  Stepper: Process/wizard step visualization
+
+New interactive blocks: - Dropdown: Select from options with local state - TextInput: Text/textarea
+  input with local state - CheckboxGroup: Multi-select checkboxes - RadioGroup: Single-select radio
+  buttons
+
+New display blocks: - TagList: Colored tag/badge chips - Sparkline: Compact inline mini-charts -
+  Video: HTML5 video embed with controls
+
+Also includes: - Version bump to 0.3.0 - 138 tests (21 new for new blocks) - Full MkDocs Material
+  documentation (14 pages, 3560 lines) - Updated full_showcase.py with all new blocks - Updated
+  frontend registry and size categories - Rebuilt frontend bundle with all components
+
+
 ## v0.1.0 (2026-05-21)
 
 ### Features
