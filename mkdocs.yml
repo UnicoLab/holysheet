@@ -129,7 +129,7 @@ nav:
     - Layout: blocks/layout.md
     - Interactive: blocks/interactive.md
   - Features: features/index.md
-  - Templates: templates/index.md
+  - Templates: report-templates/index.md
   - Data Sources: data-sources.md
   - Themes: themes.md
   - Export & Deploy: export.md

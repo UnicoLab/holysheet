@@ -1,11 +1,11 @@
 ---
 title: Features
-description: Advanced features introduced in HolySheet v0.4.0
+description: Advanced features in HolySheet v0.5.0
 ---
 
 # :rocket: Features
 
-HolySheet v0.4.0 introduces a powerful set of features that go beyond basic block composition — custom themes, multi-page reports, global filters, Jupyter integration, and more.
+HolySheet v0.5.0 includes a powerful set of features that go beyond basic block composition — custom themes, multi-page reports, global filters, Jupyter integration, AI insights, anomaly detection, PDF export, and more.
 
 ---
 
@@ -59,9 +59,6 @@ report.export_html("acme_dashboard.html")
 !!! tip "Only Override What You Need"
     The `Theme` class deep-copies the base theme and only overrides the properties you specify. Unset properties inherit from the base.
 
-!!! note "Font Loading"
-    Custom web fonts (e.g. Google Fonts) must be loaded externally. The theme sets the `font-family` CSS property — the browser must have access to the font files.
-
 ---
 
 ## :material-book-open-page-variant: Multi-Page Reports
@@ -73,258 +70,227 @@ from holysheet import Report, KPI, LineChart, DataTable, Section
 
 report = Report(title="Q4 Business Review", theme="dark")
 
-# Page 1: Overview
 report.add_page("Overview", children=[
     KPI(label="Revenue", value="$4.2M", delta="+22%", status="positive"),
-    KPI(label="Users", value="128K", delta="+31%", status="positive"),
     LineChart(title="Revenue Trend", data=monthly_data, x="month", y="revenue"),
 ])
 
-# Page 2: Sales
 report.add_page("Sales", children=[
     KPI(label="Deals Won", value=142, delta="+18", status="positive"),
     DataTable(title="Top Accounts", data=accounts_df),
 ])
 
-# Page 3: Engineering
-report.add_page("Engineering", children=[
-    KPI(label="Deploys", value=89, delta="+12", status="positive"),
-    Section(title="Sprint Metrics", children=[...]),
-])
-
 report.export_html("q4_review.html")
 ```
-
-!!! info "Page Navigation"
-    When pages are used, the report renders with a sidebar navigation panel. Each page label becomes a nav item. Viewers can click between pages without reloading.
-
-!!! warning "Pages vs Blocks"
-    Use either `add()` (flat report) **or** `add_page()` (multi-page report), not both. If you call `add_page()`, any blocks added via `add()` are ignored.
 
 ---
 
 ## :material-filter: Global Filters
 
-Add interactive filters to the report header that affect all blocks referencing the same key.
+Add interactive filters to the report header that affect all blocks.
 
 ```python title="global_filters.py"
 from holysheet import Report, LineChart, DataTable
 
 report = Report(title="Sales Analytics", theme="dark")
 
-# Add global filters
-report.add_filter(
-    "region",
-    type="dropdown",
-    label="Region",
-    options=["North America", "Europe", "Asia Pacific"],
-    default="North America",
-)
+report.add_filter("region", type="dropdown", label="Region",
+    options=["North America", "Europe", "Asia Pacific"], default="North America")
 
-report.add_filter(
-    "date_range",
-    type="date_range",
-    label="Date Range",
-)
+report.add_filter("date_range", type="date_range", label="Date Range")
+report.add_filter("search", type="text", label="Search")
 
-report.add_filter(
-    "search",
-    type="text",
-    label="Search",
-)
-
-# Add blocks that respond to filters
 report.add(LineChart(title="Revenue", data=data, x="month", y="revenue"))
 report.add(DataTable(title="Deals", data=deals))
 
 report.export_html("filtered_report.html")
 ```
 
-### Filter Types
-
 | Type | Description | Props |
 |:-----|:------------|:------|
 | `"dropdown"` | Select from a list of options | `options`, `default` |
 | `"date_range"` | Date range picker | `default` |
 | `"text"` | Free-text search input | `default` |
+| `"checkbox"` | Multi-select with checkboxes | `options`, `default` |
 
 ---
 
 ## :material-toggle-switch: Feature Flags
 
-Enable optional interactive features via constructor flags:
-
 ```python title="feature_flags.py"
-from holysheet import Report
-
 report = Report(
     title="Interactive Dashboard",
     theme="dark",
-    theme_switch=True,           # (1)!
-    presentation_mode=True,      # (2)!
-    download_buttons=True,       # (3)!
+    theme_switch=True,           # Dark/light mode toggle
+    presentation_mode=True,      # Slideshow mode
+    download_buttons=True,       # CSV download buttons
 )
 ```
-
-1. Adds a toggle button for viewers to switch between dark and light mode
-2. Enables a presentation / slideshow mode button
-3. Shows CSV download buttons on tables and charts
-
-### Feature Flag Reference
-
-| Flag | Type | Default | Description |
-|:-----|:-----|:--------|:------------|
-| `theme_switch` | `bool` | `False` | Dark/light mode toggle in the report header |
-| `presentation_mode` | `bool` | `False` | Fullscreen slideshow mode for presenting blocks one-by-one |
-| `download_buttons` | `bool` | `False` | Per-block CSV/PNG export buttons |
-
-!!! tip "Combining Feature Flags"
-    All flags are independent — enable any combination you need.
 
 ---
 
 ## :material-notebook: Jupyter Integration
 
-HolySheet renders natively in Jupyter notebooks via two methods:
+```python title="jupyter.py"
+report  # ← Auto-renders inline via _repr_html_()
 
-### Auto-Display with `_repr_html_`
-
-Simply evaluate a `Report` object in a cell — Jupyter calls `_repr_html_()` automatically:
-
-```python title="jupyter_auto.py"
-from holysheet import Report, KPI, LineChart
-
-report = Report(title="Quick Analysis", theme="dark")
-report.add(KPI(label="Score", value=92, unit="%"))
-report.add(LineChart(title="Trend", data=data, x="date", y="value"))
-
-report  # ← Renders inline in the notebook
+report.show(height=600)  # Explicit render with custom height
 ```
-
-### Explicit Display with `show()`
-
-Use `show()` for explicit rendering with a custom height:
-
-```python title="jupyter_show.py"
-report.show(height=600)  # Renders in an iframe with 600px height
-```
-
-!!! info "How It Works"
-    The report is rendered as a base64-encoded HTML document inside an iframe, providing full CSS isolation from the notebook theme.
 
 ---
 
-## :material-lock: Password Protection
+## :material-file-pdf-box: PDF Export
 
-Encrypt the report data with client-side AES encryption. Viewers must enter the password to decrypt and view the dashboard.
+Export any report as a PDF file using a headless browser:
 
-```python title="password_protected.py"
-from holysheet import Report, KPI
+```python title="pdf_export.py"
+report.export_pdf("report.pdf", landscape=True, margin="0.5in")
+```
 
+| Parameter | Type | Default | Description |
+|:----------|:-----|:--------|:------------|
+| `path` | `str \| Path` | — | Output PDF file path |
+| `width` | `str` | `"A4"` | Paper format |
+| `landscape` | `bool` | `False` | Landscape orientation |
+| `margin` | `str` | `"1cm"` | Page margins |
+
+!!! note "Requirements"
+    Requires Playwright or Chrome:
+    ```bash
+    pip install playwright && playwright install chromium
+    ```
+
+---
+
+## :material-chart-bell-curve: Anomaly Detection
+
+Automatically detect and annotate statistical outliers on charts:
+
+```python title="anomaly_detection.py"
+report.add(LineChart(
+    title="Response Time",
+    data=metrics_data,
+    x="timestamp",
+    y="latency_ms",
+    anomaly_detection=True,  # IQR-based outlier detection
+))
+```
+
+Supported on `LineChart`, `AreaChart`, and `BarChart`. Uses IQR method with MAD fallback for near-uniform distributions.
+
+---
+
+## :material-brain: AI Insight Block
+
+Generate LLM-powered data narratives at build time:
+
+```python title="ai_insight.py"
+from holysheet import AIInsight
+
+report.add(AIInsight(
+    title="Revenue Insight",
+    data=revenue_df,
+    provider="openai",      # or "anthropic" or "google"
+))
+```
+
+| Provider | SDK Required | API Key Env Var |
+|:---------|:-------------|:----------------|
+| `"openai"` | `pip install openai` | `OPENAI_API_KEY` |
+| `"anthropic"` | `pip install anthropic` | `ANTHROPIC_API_KEY` |
+| `"google"` | `pip install google-generativeai` | `GOOGLE_API_KEY` |
+
+---
+
+## :material-google-spreadsheet: Google Sheets Data Source
+
+Pull data directly from Google Sheets:
+
+```python title="google_sheets.py"
+from holysheet import GoogleSheet
+
+report.add(GoogleSheet(
+    spreadsheet_id="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms",
+    sheet_name="Q4 Data",
+    title="Revenue by Region",
+))
+```
+
+!!! note "Requirements"
+    `pip install gspread google-auth` and set `GOOGLE_APPLICATION_CREDENTIALS`.
+
+---
+
+## :material-database-search: SQL Block
+
+Run SQL queries against in-report data client-side:
+
+```python title="sql_block.py"
+from holysheet import SqlBlock
+
+report.add(SqlBlock(
+    title="Revenue Analysis",
+    query="SELECT region, SUM(revenue) as total FROM data GROUP BY region",
+    data=sales_df,
+))
+```
+
+Supports `SELECT`, `WHERE`, `GROUP BY`, `ORDER BY`, `LIMIT`, and aggregates (`COUNT`, `SUM`, `AVG`, `MIN`, `MAX`).
+
+---
+
+## :material-microphone: Narration & Voice Readback
+
+```python title="narration.py"
+from holysheet import NarrationBlock
+
+report.add(NarrationBlock(
+    text="Revenue grew 22% quarter-over-quarter.",
+    autoplay=False,
+))
+
+# Auto-generate narration from KPIs
+narration = report.auto_narrate()
+```
+
+---
+
+## :material-cloud-upload: Cloud Publish
+
+Upload reports to S3 or GCS from the CLI:
+
+```bash
+holysheet publish report.html -t s3://my-bucket/reports/q4.html --public
+holysheet publish report.html -t gs://my-bucket/reports/q4.html --public
+```
+
+---
+
+## :material-lock: Password Protection & Expiry
+
+```python title="security.py"
 report = Report(
-    title="Confidential: Board Report",
+    title="Confidential",
     theme="executive",
-    password="s3cret-p@ss!",
+    password="s3cret-p@ss!",       # AES encryption
+    expires="2026-06-30T23:59:59",  # Auto-expiry
+    compress=True,                  # Gzip compression
 )
-report.add(KPI(label="Revenue", value="$12.8M", delta="+34%", status="positive"))
-
-report.export_html("board_report.html")
-```
-
-!!! warning "Security Note"
-    Password protection uses **client-side AES encryption** with PBKDF2 key derivation. The encrypted payload is embedded in the HTML file. This is suitable for casual protection (e.g. email sharing) but is **not** a substitute for server-side access control for truly sensitive data.
-
----
-
-## :material-clock-alert: Expiring Reports
-
-Set an expiration date after which the report displays an "expired" overlay instead of the data:
-
-```python title="expiring_report.py"
-report = Report(
-    title="Weekly Metrics",
-    theme="dark",
-    expires="2026-06-30T23:59:59",  # ISO-8601 format
-)
-```
-
-!!! tip "Use Cases"
-    Expiring reports are ideal for time-sensitive data like weekly reviews, pre-board meeting materials, or trial/demo dashboards.
-
----
-
-## :material-package-down: Compression
-
-Gzip-compress the embedded JSON data to reduce HTML file size for data-heavy reports:
-
-```python title="compressed_report.py"
-report = Report(
-    title="Large Dataset Report",
-    theme="dark",
-    compress=True,
-)
-# ... add many blocks with large DataTables ...
-report.export_html("compressed_report.html")  # Smaller file size
-```
-
-!!! note "When to Use"
-    Compression is most effective for reports with large `DataTable` blocks or many chart data points. For typical reports (~10 blocks), the size difference is negligible.
-
----
-
-## :material-widgets: Widget Export
-
-Export a lightweight, embeddable subset of your report as a standalone widget:
-
-```python title="widget_export.py"
-from holysheet import Report, KPI, LineChart
-
-report = Report(title="Full Dashboard", theme="dark")
-report.add(KPI(label="Revenue", value="$1.2M"))
-report.add(KPI(label="Users", value="42K"))
-report.add(LineChart(title="Trend", data=data, x="month", y="revenue"))
-
-# Export full report
-report.export_html("dashboard.html")
-
-# Export only specific blocks as a widget
-report.export_widget(
-    "revenue_widget.html",
-    block_ids=["block_001", "block_003"],  # Only Revenue KPI + Trend chart
-)
-```
-
-The widget HTML is a minimal, self-contained file optimized for embedding in other web pages or portals.
-
-### Embedding a Widget
-
-```html title="embed_widget.html"
-<iframe
-  src="revenue_widget.html"
-  width="100%"
-  height="400"
-  frameborder="0"
-  style="border-radius: 8px;"
-></iframe>
 ```
 
 ---
 
-## :bulb: Feature Combinations
-
-Here's a real-world example combining multiple features:
+## :bulb: Full Example
 
 ```python title="full_featured.py"
-from holysheet import Report, KPI, LineChart, DataTable
+from holysheet import Report, KPI, LineChart, DataTable, AIInsight, NarrationBlock
 from holysheet.themes import Theme
 
-# Custom branded theme
 theme = Theme(name="corp", base="dark", primary="#1E88E5", font="Inter")
 
 report = Report(
     title="Q4 Executive Review",
     theme=theme,
-    author="Data Team",
     theme_switch=True,
     download_buttons=True,
     password="board-2026",
@@ -336,12 +302,15 @@ report.add_filter("region", options=["US", "EU", "APAC"], default="US")
 
 report.add_page("Summary", children=[
     KPI(label="Revenue", value="$12.8M", delta="+22%", status="positive"),
-    LineChart(title="Revenue Trend", data=revenue_data, x="month", y="revenue"),
+    LineChart(title="Trend", data=data, x="month", y="revenue", anomaly_detection=True),
+    AIInsight(title="Key Findings", data=data, provider="openai"),
 ])
 
 report.add_page("Details", children=[
-    DataTable(title="Deal Pipeline", data=pipeline_df),
+    DataTable(title="Pipeline", data=pipeline_df),
+    NarrationBlock(text=report.auto_narrate()),
 ])
 
 report.export_html("q4_review.html")
+report.export_pdf("q4_review.pdf", landscape=True)
 ```
