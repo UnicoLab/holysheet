@@ -63,11 +63,11 @@ report.export_html("report.html")  # ← Open in any browser. Done.
 
     Generate a standalone `.html` file (~1.5 MB) with everything embedded. Share via email, Slack, S3, or Confluence.
 
--   :material-chart-box:{ .lg .middle } **26 Block Types**
+-   :material-chart-box:{ .lg .middle } **47 Block Types**
 
     ---
 
-    KPIs, charts (line, bar, area, pie, scatter, radar, gauge, funnel, treemap), tables, markdown, code blocks, and more.
+    KPIs, 15 chart types (line, bar, area, pie, scatter, radar, gauge, funnel, treemap, heatmap, candlestick, sankey, waterfall, boxplot, map), tables, timelines, user cards, and more.
 
 -   :material-palette:{ .lg .middle } **3 Premium Themes**
 
@@ -95,12 +95,12 @@ report.export_html("report.html")  # ← Open in any browser. Done.
 
 | Feature | Description |
 |:--------|:------------|
-| :material-cube-outline: **26 block types** | KPI, Metric, 9 chart types, DataTable, Markdown, CodeBlock, Image, Alert, ProgressBar, layout blocks, interactive controls |
+| :material-cube-outline: **47 block types** | KPI, Metric, 15 chart types, DataTable, Timeline, UserCard, StatusList, Callout, JsonViewer, layout blocks, interactive controls |
 | :material-palette-swatch: **3 themes** | `dark`, `light`, `executive` — each with a full design system |
 | :material-export: **3 export modes** | Standalone HTML, folder (for hosting), or raw JSON |
 | :material-console: **CLI included** | `holysheet validate`, `holysheet serve`, `holysheet version` |
-| :material-view-column: **Layout system** | Columns, Sections, Tabs, Accordion, Dividers |
-| :material-gesture-tap: **Interactive controls** | Sliders, number inputs, toggles |
+| :material-view-column: **Layout system** | Columns, Sections, Tabs, Accordion, Stepper, Dividers |
+| :material-gesture-tap: **Interactive controls** | Sliders, toggles, dropdowns, text inputs, checkboxes, radio buttons |
 | :material-database-check: **Smart data handling** | Auto-converts pandas, polars, dicts — handles NaN, datetime, Decimal |
 | :material-shield-check: **Validated** | Every block is a Pydantic v2 model with full type safety |
 
@@ -120,7 +120,7 @@ report.export_html("report.html")  # ← Open in any browser. Done.
 
     ---
 
-    Reference for all 26 block types with examples.
+    Reference for all 47 block types with examples.
 
 -   :material-palette:{ .lg .middle } **[Themes](themes.md)**
 

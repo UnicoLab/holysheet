@@ -7,6 +7,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.0] — 2026-05-21
+
+### :sparkles: 21 New Block Types (47 Total)
+
+A massive expansion that nearly doubles the available block types, adding advanced charts, content blocks, and interactive controls.
+
+### Added
+
+#### Charts (6 new → 15 total)
+
+- `HeatmapChart` — 2D heatmap with color gradient visualization
+- `CandlestickChart` — Financial OHLC candlestick charts (green/red)
+- `SankeyChart` — Flow / energy diagrams with node-link architecture
+- `WaterfallChart` — Revenue bridge / waterfall analysis charts
+- `BoxPlotChart` — Statistical box-and-whisker distribution plots
+- `MapChart` — Geographical scatter with bubble sizing
+
+#### Content & Display (8 new → 14 total)
+
+- `Timeline` — Vertical event/milestone timeline with colored markers
+- `Callout` — Styled quotes, highlights, and notes (3 variants)
+- `Embed` — iframe embedding with aspect ratio support
+- `JsonViewer` — Interactive JSON tree with syntax highlighting
+- `UserCard` — Team member cards with avatar and stats
+- `StatusList` — Service health indicators with colored dots
+- `InfoList` — Key-value pair display with icons
+- `Stepper` — Process/wizard step visualization
+
+#### Interactive (4 new → 7 total)
+
+- `Dropdown` — Select from options with local state
+- `TextInput` — Text/textarea input with placeholder
+- `CheckboxGroup` — Multiple checkbox selection
+- `RadioGroup` — Single-select radio buttons
+
+#### Display (3 new)
+
+- `TagList` — Colored tag/badge chips
+- `Sparkline` — Compact inline mini-charts (ECharts)
+- `Video` — HTML5 video embed with poster and controls
+
+### Changed
+
+- Updated `full_showcase.py` example to demonstrate all 47 block types
+- Updated frontend registry and size category mappings
+- Rebuilt React frontend bundle with all new components
+- 138 tests (21 new for new blocks)
+- Complete MkDocs Material documentation (14 pages)
+
+---
+
 ## [0.2.0] — 2026-05-21
 
 ### :sparkles: First Public Release
@@ -112,7 +163,6 @@ The initial release of HolySheet — a Python-first report compiler that generat
 
 Planned for future releases:
 
-- :material-chart-sankey: Additional chart types (Sankey, Gantt, DAG, Heatmap)
 - :material-robot: AI narrative blocks (auto-generated insights)
 - :material-filter: Interactive filters and cross-chart drill-down
 - :material-file-pdf-box: PDF export
@@ -120,6 +170,7 @@ Planned for future releases:
 - :material-puzzle: Custom React component injection
 - :material-palette-swatch: Enterprise theme gallery + custom theme API
 - :material-lock: Signed / offline report bundles
+- :material-chart-gantt: Gantt chart and DAG visualization
 - :material-chat: Local chatbot over report data
 
 ---

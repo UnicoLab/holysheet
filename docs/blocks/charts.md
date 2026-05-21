@@ -1,6 +1,6 @@
 # Charts
 
-HolySheet includes **9 chart types** powered by Apache ECharts, providing rich interactive visualizations with tooltips, legends, and responsive sizing.
+HolySheet includes **15 chart types** powered by Apache ECharts, providing rich interactive visualizations with tooltips, legends, and responsive sizing.
 
 ---
 
@@ -385,6 +385,228 @@ TreemapChart(
 
 ---
 
+## HeatmapChart
+
+2D heatmap with color gradient visualization — ideal for showing patterns across two categorical dimensions.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `title` | `str` | *required* | Chart title |
+| `data` | `Any` | `None` | Tabular data with x, y, and value columns |
+| `x` | `str` | *required* | Column name for X axis categories |
+| `y` | `str` | *required* | Column name for Y axis categories |
+| `value` | `str` | *required* | Column name for the heat value |
+| `height` | `int` | `360` | Chart height in pixels |
+
+!!! example "Website Traffic Heatmap"
+
+    ```python title="heatmap_example.py"
+    from holysheet import HeatmapChart
+
+    heatmap_data = []
+    for day in ["Mon", "Tue", "Wed", "Thu", "Fri"]:
+        for hour in ["9am", "10am", "11am", "12pm", "1pm", "2pm"]:
+            heatmap_data.append({"day": day, "hour": hour, "visits": random.randint(10, 200)})
+
+    HeatmapChart(
+        title="Website Traffic by Day & Hour",
+        data=heatmap_data,
+        x="hour",
+        y="day",
+        value="visits",
+    )
+    ```
+
+---
+
+## CandlestickChart
+
+Financial OHLC (Open-High-Low-Close) candlestick chart for stock price and financial data.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `title` | `str` | *required* | Chart title |
+| `data` | `Any` | `None` | Tabular data with OHLC columns |
+| `x` | `str` | *required* | Column for date/category axis |
+| `open` | `str` | `"open"` | Column for open price |
+| `close` | `str` | `"close"` | Column for close price |
+| `low` | `str` | `"low"` | Column for low price |
+| `high` | `str` | `"high"` | Column for high price |
+| `height` | `int` | `400` | Chart height in pixels |
+
+!!! example "Stock Price Chart"
+
+    ```python title="candlestick_example.py"
+    from holysheet import CandlestickChart
+
+    CandlestickChart(
+        title="AAPL Stock Price",
+        data=[
+            {"date": "2024-01", "open": 142.5, "close": 148.3, "low": 138.2, "high": 150.1},
+            {"date": "2024-02", "open": 148.3, "close": 155.7, "low": 145.0, "high": 158.4},
+            {"date": "2024-03", "open": 155.7, "close": 149.8, "low": 146.3, "high": 159.2},
+        ],
+        x="date",
+    )
+    ```
+
+!!! tip "Custom Column Names"
+    If your data uses different column names (e.g. `open_price` instead of `open`), specify them explicitly: `open="open_price"`, `close="close_price"`, etc.
+
+---
+
+## SankeyChart
+
+Sankey / flow diagram for visualizing flows, energy transfers, or revenue attribution.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `title` | `str` | *required* | Chart title |
+| `nodes` | `list[dict]` | *required* | List of node dicts with `name` key |
+| `links` | `list[dict]` | *required* | List of link dicts with `source`, `target`, `value` |
+| `height` | `int` | `400` | Chart height in pixels |
+
+!!! example "Revenue Flow"
+
+    ```python title="sankey_example.py"
+    from holysheet import SankeyChart
+
+    SankeyChart(
+        title="Revenue Flow",
+        nodes=[
+            {"name": "Product Sales"},
+            {"name": "Services"},
+            {"name": "North America"},
+            {"name": "Europe"},
+            {"name": "Net Revenue"},
+        ],
+        links=[
+            {"source": "Product Sales", "target": "North America", "value": 450},
+            {"source": "Product Sales", "target": "Europe", "value": 280},
+            {"source": "Services", "target": "North America", "value": 200},
+            {"source": "North America", "target": "Net Revenue", "value": 650},
+            {"source": "Europe", "target": "Net Revenue", "value": 280},
+        ],
+    )
+    ```
+
+!!! info "Sankey vs Other Charts"
+    Unlike most charts, `SankeyChart` does **not** use `data`/`x`/`y` props. Instead, it takes explicit `nodes` and `links` lists.
+
+---
+
+## WaterfallChart
+
+Waterfall / bridge chart for financial analysis — shows how individual values contribute to a total.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `title` | `str` | *required* | Chart title |
+| `data` | `Any` | `None` | Tabular data with category and value columns |
+| `category` | `str` | *required* | Column name for categories |
+| `value` | `str` | *required* | Column name for values (positive = green, negative = red) |
+| `height` | `int` | `360` | Chart height in pixels |
+
+!!! example "Revenue Bridge"
+
+    ```python title="waterfall_example.py"
+    from holysheet import WaterfallChart
+
+    WaterfallChart(
+        title="Revenue Bridge Q3 → Q4",
+        data=[
+            {"item": "Q3 Revenue", "amount": 1850},
+            {"item": "New Customers", "amount": 420},
+            {"item": "Upsells", "amount": 180},
+            {"item": "Churn", "amount": -210},
+            {"item": "Refunds", "amount": -45},
+        ],
+        category="item",
+        value="amount",
+    )
+    ```
+
+---
+
+## BoxPlotChart
+
+Statistical box-and-whisker plot for visualizing data distributions.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `title` | `str` | *required* | Chart title |
+| `data` | `list[list[float]]` | *required* | Each inner list: `[min, Q1, median, Q3, max]` |
+| `categories` | `list[str] \| None` | `None` | Labels for each box |
+| `height` | `int` | `360` | Chart height in pixels |
+
+!!! example "Response Time Distribution"
+
+    ```python title="boxplot_example.py"
+    from holysheet import BoxPlotChart
+
+    BoxPlotChart(
+        title="API Response Time (ms)",
+        data=[
+            [12, 45, 68, 120, 250],   # API v1
+            [8, 32, 55, 95, 180],     # API v2
+            [15, 52, 82, 145, 310],   # GraphQL
+        ],
+        categories=["API v1", "API v2", "GraphQL"],
+    )
+    ```
+
+!!! info "Data Format"
+    Each inner list represents one box: `[min, Q1, median, Q3, max]`. This is **not** raw data — you need to pre-compute the statistics.
+
+---
+
+## MapChart
+
+Geographical scatter chart for visualizing data points on a coordinate grid.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `title` | `str` | *required* | Chart title |
+| `data` | `Any` | `None` | Tabular data with lat/lng/value columns |
+| `lat` | `str` | *required* | Column name for latitude |
+| `lng` | `str` | *required* | Column name for longitude |
+| `value` | `str` | *required* | Column name for bubble size |
+| `name` | `str \| None` | `None` | Column name for point labels |
+| `height` | `int` | `400` | Chart height in pixels |
+
+!!! example "Global User Distribution"
+
+    ```python title="map_example.py"
+    from holysheet import MapChart
+
+    MapChart(
+        title="Global Users",
+        data=[
+            {"lat": 40.7, "lng": -74.0, "users": 45000, "city": "New York"},
+            {"lat": 51.5, "lng": -0.1, "users": 38000, "city": "London"},
+            {"lat": 35.7, "lng": 139.7, "users": 32000, "city": "Tokyo"},
+        ],
+        lat="lat",
+        lng="lng",
+        value="users",
+        name="city",
+    )
+    ```
+
+---
+
 ## :bulb: Chart Tips
 
 ### Setting Chart Height
@@ -422,6 +644,12 @@ LineChart(
 | `GaugeChart` | — | `value` (number) | `thresholds` |
 | `FunnelChart` | `name` (str) | `value` (str) | — |
 | `TreemapChart` | `name` (str) | `value` (str) | `category` |
+| `HeatmapChart` | `x`, `y` (str) | `value` (str) | — |
+| `CandlestickChart` | `x` (str) | `open`, `close`, `low`, `high` | — |
+| `SankeyChart` | `nodes` (list) | `links` (list) | — |
+| `WaterfallChart` | `category` (str) | `value` (str) | — |
+| `BoxPlotChart` | `categories` (list) | `data` (nested lists) | — |
+| `MapChart` | `lat`, `lng` (str) | `value` (str) | `name` |
 
 !!! warning "Data Required"
-    Most charts require `data` to be provided. If `data` is `None`, the chart will render with no data points. The exception is `GaugeChart`, which uses a direct `value` prop instead of tabular data.
+    Most charts require `data` to be provided. If `data` is `None`, the chart will render with no data points. The exceptions are `GaugeChart` (uses a direct `value` prop), `SankeyChart` (uses `nodes`/`links`), and `BoxPlotChart` (uses nested lists).

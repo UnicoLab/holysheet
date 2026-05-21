@@ -1,6 +1,6 @@
 # API Reference
 
-Complete API reference for HolySheet v0.2.0.
+Complete API reference for HolySheet v0.3.0.
 
 ---
 
@@ -453,6 +453,183 @@ Toggle(
     description: str | None = None,
     default_value: bool = False,
 )
+```
+
+---
+
+### HeatmapChart
+
+```python
+HeatmapChart(title: str, data: Any = None, x: str = "", y: str = "", value: str = "", height: int = 360)
+```
+
+---
+
+### CandlestickChart
+
+```python
+CandlestickChart(title: str, data: Any = None, x: str = "", open: str = "open", close: str = "close", low: str = "low", high: str = "high", height: int = 400)
+```
+
+---
+
+### SankeyChart
+
+```python
+SankeyChart(title: str, nodes: list[dict] = [], links: list[dict] = [], height: int = 400)
+```
+
+---
+
+### WaterfallChart
+
+```python
+WaterfallChart(title: str, data: Any = None, category: str = "", value: str = "", height: int = 360)
+```
+
+---
+
+### BoxPlotChart
+
+```python
+BoxPlotChart(title: str, data: list[list[float]] = [], categories: list[str] | None = None, height: int = 360)
+```
+
+---
+
+### MapChart
+
+```python
+MapChart(title: str, data: Any = None, lat: str = "", lng: str = "", value: str = "", name: str | None = None, height: int = 400)
+```
+
+---
+
+### Timeline
+
+```python
+Timeline(title: str | None = None, events: list[dict] = [])
+# Event dict: {"date": str, "title": str, "description"?: str, "icon"?: str, "color"?: str}
+```
+
+---
+
+### Callout
+
+```python
+Callout(content: str, author: str | None = None, icon: str | None = None, variant: Literal["quote", "highlight", "note"] = "quote")
+```
+
+---
+
+### Embed
+
+```python
+Embed(url: str, title: str | None = None, height: int = 400, aspect_ratio: str | None = None)
+```
+
+---
+
+### JsonViewer
+
+```python
+JsonViewer(data: Any = None, title: str | None = None, collapsed_depth: int = 2)
+```
+
+---
+
+### UserCard
+
+```python
+UserCard(name: str, role: str | None = None, avatar_url: str | None = None, email: str | None = None, stats: list[dict] | None = None)
+# Stats dict: {"label": str, "value": str}
+```
+
+---
+
+### StatusList
+
+```python
+StatusList(title: str | None = None, items: list[dict] = [])
+# Item dict: {"label": str, "status": "success"|"warning"|"error"|"info"|"pending", "description"?: str, "value"?: str}
+```
+
+---
+
+### InfoList
+
+```python
+InfoList(title: str | None = None, items: list[dict] = [])
+# Item dict: {"key": str, "value": str, "icon"?: str}
+```
+
+---
+
+### Stepper
+
+```python
+Stepper(title: str | None = None, steps: list[dict] = [], current_step: int | None = None)
+# Step dict: {"label": str, "description"?: str, "status"?: "complete"|"active"|"pending"}
+```
+
+---
+
+### TagList
+
+```python
+TagList(title: str | None = None, tags: list[dict] = [])
+# Tag dict: {"label": str, "color"?: str, "variant"?: str}
+```
+
+---
+
+### Sparkline
+
+```python
+Sparkline(data: list[int | float] = [], color: str | None = None, height: int = 60, show_area: bool = True)
+```
+
+---
+
+### Video
+
+```python
+Video(src: str, title: str | None = None, poster: str | None = None, autoplay: bool = False, controls: bool = True)
+```
+
+---
+
+### Dropdown
+
+```python
+Dropdown(label: str, options: list[dict] = [], default_value: Any = None, description: str | None = None)
+# Option dict: {"label": str, "value": Any}
+```
+
+---
+
+### TextInput
+
+```python
+TextInput(label: str, placeholder: str | None = None, default_value: str | None = None, multiline: bool = False, rows: int = 3, description: str | None = None)
+```
+
+---
+
+### CheckboxGroup
+
+```python
+CheckboxGroup(label: str, options: list[dict] = [], default_values: list | None = None, description: str | None = None)
+# Option dict: {"label": str, "value": Any}
+```
+
+---
+
+### RadioGroup
+
+```python
+RadioGroup(label: str, options: list[dict] = [], default_value: Any = None, description: str | None = None)
+# Option dict: {"label": str, "value": Any}
 ```
 
 ---

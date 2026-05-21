@@ -145,9 +145,9 @@ pip install holysheet[all]
 
 ## 🧱 Block Reference
 
-HolySheet ships with **20 block types** organized into four categories:
+HolySheet ships with **47 block types** organized into five categories:
 
-### 📊 Charts
+### 📊 Charts (15)
 
 | Block | Description | Key Props |
 |---|---|---|
@@ -160,16 +160,23 @@ HolySheet ships with **20 block types** organized into four categories:
 | `GaugeChart` | Speedometer gauge | `value`, `min`, `max`, `thresholds` |
 | `FunnelChart` | Conversion funnel | `data`, `name`, `value` |
 | `TreemapChart` | Hierarchical treemap | `data`, `name`, `value`, `category` |
+| `HeatmapChart` | 2D heatmap with color gradient | `data`, `x`, `y`, `value` |
+| `CandlestickChart` | Financial OHLC chart | `data`, `x`, `open`, `close`, `low`, `high` |
+| `SankeyChart` | Flow / energy diagram | `nodes`, `links` |
+| `WaterfallChart` | Waterfall / bridge chart | `data`, `category`, `value` |
+| `BoxPlotChart` | Statistical box plot | `data`, `categories` |
+| `MapChart` | Geographical scatter | `data`, `lat`, `lng`, `value`, `name` |
 
-### 📈 Metrics
+### 📈 Metrics (4)
 
 | Block | Description | Key Props |
 |---|---|---|
 | `KPI` | Key metric card with delta | `label`, `value`, `unit`, `delta`, `status` |
 | `Metric` | Compact inline metric | `label`, `value`, `unit`, `icon` |
 | `ProgressBar` | Progress indicator | `label`, `value`, `max`, `color` |
+| `StatComparison` | Side-by-side comparison | `title`, `items` |
 
-### 📝 Content
+### 📝 Content (12)
 
 | Block | Description | Key Props |
 |---|---|---|
@@ -178,8 +185,15 @@ HolySheet ships with **20 block types** organized into four categories:
 | `CodeBlock` | Syntax-highlighted code | `code`, `language`, `title` |
 | `Image` | Image display | `src`, `alt`, `caption` |
 | `Alert` | Callout / notification | `severity`, `title`, `message` |
+| `Timeline` | Vertical event timeline | `events` `[{date, title, description}]` |
+| `Callout` | Styled quote / highlight | `content`, `author`, `variant` |
+| `JsonViewer` | Interactive JSON tree | `data`, `collapsed_depth` |
+| `UserCard` | Team member card | `name`, `role`, `avatar_url`, `stats` |
+| `StatusList` | Status indicators list | `items` `[{label, status, value}]` |
+| `InfoList` | Key-value pair display | `items` `[{key, value, icon}]` |
+| `Sparkline` | Tiny inline chart | `data`, `color`, `show_area` |
 
-### 📐 Layout
+### 📐 Layout (7)
 
 | Block | Description | Key Props |
 |---|---|---|
@@ -187,6 +201,23 @@ HolySheet ships with **20 block types** organized into four categories:
 | `Columns` | Multi-column responsive grid | `children`, `widths` |
 | `Tabs` | Tabbed content panels | `tabs` (list of `{label, children}`) |
 | `Divider` | Visual separator line | `label`, `variant` |
+| `Accordion` | Collapsible content panels | `panels` (list of `{title, children}`) |
+| `Stepper` | Process / wizard steps | `steps` `[{label, description, status}]` |
+| `TagList` | Colored tag/badge chips | `tags` `[{label, color}]` |
+
+### 🎮 Interactive (9)
+
+| Block | Description | Key Props |
+|---|---|---|
+| `Slider` | Range slider input | `label`, `min`, `max`, `default_value` |
+| `NumberInput` | Numeric input field | `label`, `default_value`, `step` |
+| `Toggle` | On/off switch | `label`, `default_value` |
+| `Dropdown` | Select from options | `label`, `options`, `default_value` |
+| `TextInput` | Text / textarea input | `label`, `placeholder`, `multiline` |
+| `CheckboxGroup` | Multiple checkboxes | `label`, `options`, `default_values` |
+| `RadioGroup` | Single-select radio buttons | `label`, `options`, `default_value` |
+| `Embed` | Iframe embed | `url`, `height`, `aspect_ratio` |
+| `Video` | HTML5 video player | `src`, `poster`, `controls` |
 
 ---
 

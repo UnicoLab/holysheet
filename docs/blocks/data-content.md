@@ -331,3 +331,347 @@ ProgressBar(
 
 !!! tip "Using with Columns"
     Wrap multiple `ProgressBar` blocks in a `Columns` layout to create a utilization dashboard row.
+
+---
+
+## Timeline
+
+Vertical event/milestone timeline for roadmaps, changelogs, and process histories.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `title` | `str \| None` | `None` | Section title |
+| `events` | `list[dict]` | *required* | List of event dicts |
+
+**Event dict keys:** `date` (str, required), `title` (str, required), `description` (str, optional), `icon` (str, optional), `color` (str, optional hex color)
+
+!!! example "Product Roadmap"
+
+    ```python title="timeline_example.py"
+    from holysheet import Timeline
+
+    Timeline(
+        title="Product Roadmap 2024",
+        events=[
+            {"date": "Jan 2024", "title": "v1.0 Launch", "description": "Initial public release", "color": "#22c55e"},
+            {"date": "Mar 2024", "title": "v1.5 Charts", "description": "Added 9 chart types", "color": "#6366f1"},
+            {"date": "Jun 2024", "title": "v2.0 Interactive", "description": "Sliders, toggles, dropdowns", "color": "#f59e0b"},
+            {"date": "Sep 2024", "title": "v3.0 Pro", "description": "21 new block types", "color": "#ef4444"},
+        ],
+    )
+    ```
+
+---
+
+## Callout
+
+Styled quote, highlight, or note block — perfect for pull quotes, key takeaways, and editorial content.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `content` | `str` | *required* | The callout text |
+| `author` | `str \| None` | `None` | Attribution text |
+| `icon` | `str \| None` | `None` | Icon emoji/string |
+| `variant` | `"quote" \| "highlight" \| "note"` | `"quote"` | Visual style variant |
+
+!!! example "Callout Variants"
+
+    === "Quote"
+
+        ```python
+        Callout(
+            content="The best dashboards tell a story.",
+            author="Product Team",
+            variant="quote",
+            icon="💡",
+        )
+        ```
+
+    === "Highlight"
+
+        ```python
+        Callout(
+            content="47 block types. 3 themes. Zero Node.js required.",
+            variant="highlight",
+        )
+        ```
+
+    === "Note"
+
+        ```python
+        Callout(
+            content="Data is refreshed every 15 minutes.",
+            variant="note",
+        )
+        ```
+
+---
+
+## Embed
+
+Embed external content via an iframe — dashboards, maps, videos, or any web page.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `url` | `str` | *required* | URL to embed |
+| `title` | `str \| None` | `None` | Accessible title |
+| `height` | `int` | `400` | Iframe height in pixels |
+| `aspect_ratio` | `str \| None` | `None` | Optional CSS aspect ratio (e.g. `"16/9"`) |
+
+```python title="embed_example.py"
+from holysheet import Embed
+
+Embed(
+    url="https://www.google.com/maps/embed?pb=...",
+    title="Office Locations",
+    height=450,
+)
+```
+
+!!! warning "Security"
+    The embedded page must allow iframe embedding via its `X-Frame-Options` or `Content-Security-Policy` headers.
+
+---
+
+## JsonViewer
+
+Interactive JSON tree with syntax highlighting, collapsible levels, and color-coded types.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `data` | `Any` | *required* | Any JSON-serializable Python object |
+| `title` | `str \| None` | `None` | Title above the viewer |
+| `collapsed_depth` | `int` | `2` | Auto-collapse levels deeper than this |
+
+!!! example "Configuration Viewer"
+
+    ```python title="json_viewer_example.py"
+    from holysheet import JsonViewer
+
+    JsonViewer(
+        data={
+            "app": {"name": "NovaPulse", "version": "3.0.0"},
+            "features": ["charts", "interactive", "timeline"],
+            "metrics": {"users": 45000, "uptime": 99.97},
+        },
+        title="Application Config",
+        collapsed_depth=1,
+    )
+    ```
+
+---
+
+## UserCard
+
+Team member / person card with avatar, role, email, and optional stats.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `name` | `str` | *required* | Person's name |
+| `role` | `str \| None` | `None` | Job title / role |
+| `avatar_url` | `str \| None` | `None` | URL for avatar image |
+| `email` | `str \| None` | `None` | Email address |
+| `stats` | `list[dict] \| None` | `None` | List of `{label, value}` dicts |
+
+!!! example "Team Cards"
+
+    ```python title="user_card_example.py"
+    from holysheet import UserCard, Columns
+
+    Columns(children=[
+        UserCard(
+            name="Alice Chen",
+            role="Chief Data Officer",
+            email="alice@company.io",
+            stats=[{"label": "Reports", "value": "142"}, {"label": "Dashboards", "value": "38"}],
+        ),
+        UserCard(
+            name="Marcus Johnson",
+            role="VP Engineering",
+            stats=[{"label": "Deployments", "value": "1.2K"}, {"label": "Uptime", "value": "99.97%"}],
+        ),
+    ])
+    ```
+
+---
+
+## StatusList
+
+List with colored status indicators — ideal for service health, deployment status, and task tracking.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `title` | `str \| None` | `None` | Section title |
+| `items` | `list[dict]` | *required* | List of status item dicts |
+
+**Item dict keys:** `label` (str, required), `status` (`"success"` \| `"warning"` \| `"error"` \| `"info"` \| `"pending"`, required), `description` (str, optional), `value` (str, optional)
+
+!!! example "Service Health"
+
+    ```python title="status_list_example.py"
+    from holysheet import StatusList
+
+    StatusList(
+        title="Service Health",
+        items=[
+            {"label": "API Gateway", "status": "success", "value": "12ms"},
+            {"label": "Redis Cache", "status": "warning", "value": "85%", "description": "Memory elevated"},
+            {"label": "ML Pipeline", "status": "error", "value": "DOWN"},
+            {"label": "Email Service", "status": "pending", "value": "Queue: 142"},
+        ],
+    )
+    ```
+
+---
+
+## InfoList
+
+Key-value pair display with optional icons — for configuration panels, metadata, and summary lists.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `title` | `str \| None` | `None` | Section title |
+| `items` | `list[dict]` | *required* | List of `{key, value, icon?}` dicts |
+
+```python title="info_list_example.py"
+from holysheet import InfoList
+
+InfoList(
+    title="System Configuration",
+    items=[
+        {"key": "Environment", "value": "Production", "icon": "🌐"},
+        {"key": "Region", "value": "us-east-1", "icon": "📍"},
+        {"key": "Python", "value": "3.12.4", "icon": "🐍"},
+        {"key": "Database", "value": "PostgreSQL 16.2", "icon": "🗄️"},
+    ],
+)
+```
+
+---
+
+## Stepper
+
+Process / wizard step visualization showing sequential stages with status indicators.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `title` | `str \| None` | `None` | Section title |
+| `steps` | `list[dict]` | *required* | List of step dicts |
+| `current_step` | `int \| None` | `None` | Zero-based index of current active step |
+
+**Step dict keys:** `label` (str, required), `description` (str, optional), `status` (`"complete"` \| `"active"` \| `"pending"`, optional)
+
+!!! example "Deployment Pipeline"
+
+    ```python title="stepper_example.py"
+    from holysheet import Stepper
+
+    Stepper(
+        title="Deployment Pipeline",
+        steps=[
+            {"label": "Build", "description": "Compile & bundle", "status": "complete"},
+            {"label": "Test", "description": "Unit + integration", "status": "complete"},
+            {"label": "Staging", "description": "Canary deploy", "status": "active"},
+            {"label": "Production", "description": "Blue-green deploy", "status": "pending"},
+        ],
+        current_step=2,
+    )
+    ```
+
+---
+
+## TagList
+
+Display a collection of colored tags/badges — for technology stacks, categories, and labels.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `title` | `str \| None` | `None` | Section title |
+| `tags` | `list[dict]` | *required* | List of `{label, color?, variant?}` dicts |
+
+```python title="tag_list_example.py"
+from holysheet import TagList
+
+TagList(
+    title="Tech Stack",
+    tags=[
+        {"label": "Python", "color": "#3776AB"},
+        {"label": "React", "color": "#61DAFB"},
+        {"label": "TypeScript", "color": "#3178C6"},
+        {"label": "PostgreSQL", "color": "#4169E1"},
+    ],
+)
+```
+
+---
+
+## Sparkline
+
+Tiny inline chart — a compact line/area visualization with no axes, perfect for showing trends at a glance.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `data` | `list[int \| float]` | *required* | Numeric values for the line |
+| `color` | `str \| None` | `None` | Line color (CSS color) |
+| `height` | `int` | `60` | Chart height in pixels |
+| `show_area` | `bool` | `True` | Fill area below the line |
+
+```python title="sparkline_example.py"
+from holysheet import Sparkline, Columns
+
+Columns(children=[
+    Sparkline(data=[10, 25, 18, 35, 28, 42, 55, 48, 62, 75], color="#6C63FF"),
+    Sparkline(data=[50, 45, 52, 48, 55, 42, 58, 62, 68, 80], color="#34d399"),
+])
+```
+
+!!! tip "Use with KPIs"
+    Place a `Sparkline` next to a `KPI` in a `Columns` layout to add trend context to your metrics.
+
+---
+
+## Video
+
+HTML5 video embed with poster image, controls, and responsive sizing.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `src` | `str` | *required* | Video URL |
+| `title` | `str \| None` | `None` | Title above the player |
+| `poster` | `str \| None` | `None` | Poster/thumbnail image URL |
+| `autoplay` | `bool` | `False` | Auto-play on load |
+| `controls` | `bool` | `True` | Show playback controls |
+
+```python title="video_example.py"
+from holysheet import Video
+
+Video(
+    src="https://example.com/demo.mp4",
+    title="Product Demo",
+    poster="https://example.com/poster.jpg",
+    controls=True,
+)
+```
+

@@ -1,6 +1,6 @@
 # Interactive Blocks
 
-Interactive blocks add user controls to your dashboard — sliders, number inputs, and toggles. These provide a way to include interactive UI elements in your reports.
+Interactive blocks add user controls to your dashboard — sliders, number inputs, toggles, dropdowns, text inputs, and more. These provide a way to include interactive UI elements with local state in your reports.
 
 ---
 
@@ -184,7 +184,7 @@ Interactive blocks in HolySheet render as functional UI controls in the browser.
 3. **Display Only** — Currently, changing a control's value does not automatically filter or update other blocks in the dashboard
 
 !!! info "Interactive Blocks Are Visual"
-    In the current version (v0.2.0), interactive blocks serve as **visual input elements**. They display and respond to user interaction within the dashboard but do not yet trigger cross-block reactivity.
+    In the current version (v0.3.0), interactive blocks serve as **visual input elements**. They display and respond to user interaction within the dashboard but do not yet trigger cross-block reactivity.
 
 ### Future Roadmap
 
@@ -235,3 +235,134 @@ report.add(LineChart(title="Revenue Trend", data=data, x="month", y="revenue"))
 
 report.export_html("interactive_dashboard.html")
 ```
+
+---
+
+## Dropdown
+
+Interactive select/dropdown for choosing from predefined options.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `label` | `str` | *required* | Dropdown label |
+| `options` | `list[dict]` | *required* | List of `{label, value}` dicts |
+| `default_value` | `Any \| None` | `None` | Initially selected value |
+| `description` | `str \| None` | `None` | Helper text |
+
+```python title="dropdown_example.py"
+from holysheet import Dropdown
+
+Dropdown(
+    label="Select Region",
+    options=[
+        {"label": "🇺🇸 North America", "value": "na"},
+        {"label": "🇪🇺 Europe", "value": "eu"},
+        {"label": "🌏 Asia Pacific", "value": "apac"},
+    ],
+    default_value="na",
+    description="Filter dashboard data by region",
+)
+```
+
+---
+
+## TextInput
+
+Text or textarea input field with placeholder support.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `label` | `str` | *required* | Input label |
+| `placeholder` | `str \| None` | `None` | Placeholder text |
+| `default_value` | `str \| None` | `None` | Initial value |
+| `multiline` | `bool` | `False` | Enable multi-line textarea |
+| `rows` | `int` | `3` | Number of rows (when `multiline=True`) |
+| `description` | `str \| None` | `None` | Helper text |
+
+```python title="text_input_example.py"
+from holysheet import TextInput, Columns
+
+Columns(children=[
+    TextInput(
+        label="Search Reports",
+        placeholder="Type to search...",
+        description="Search across all reports and dashboards",
+    ),
+    TextInput(
+        label="Notes",
+        placeholder="Add your observations...",
+        multiline=True,
+        rows=5,
+    ),
+])
+```
+
+---
+
+## CheckboxGroup
+
+Multiple checkbox selection — for multi-select filters and option toggles.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `label` | `str` | *required* | Group label |
+| `options` | `list[dict]` | *required* | List of `{label, value}` dicts |
+| `default_values` | `list \| None` | `None` | Initially checked values |
+| `description` | `str \| None` | `None` | Helper text |
+
+!!! example "Module Selection"
+
+    ```python title="checkbox_example.py"
+    from holysheet import CheckboxGroup
+
+    CheckboxGroup(
+        label="Dashboard Modules",
+        options=[
+            {"label": "Revenue Analytics", "value": "revenue"},
+            {"label": "User Metrics", "value": "users"},
+            {"label": "Infrastructure", "value": "infra"},
+            {"label": "Security Alerts", "value": "security"},
+        ],
+        default_values=["revenue", "users"],
+        description="Select modules to display",
+    )
+    ```
+
+---
+
+## RadioGroup
+
+Single-select radio button group for choosing one option from a set.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `label` | `str` | *required* | Group label |
+| `options` | `list[dict]` | *required* | List of `{label, value}` dicts |
+| `default_value` | `Any \| None` | `None` | Initially selected value |
+| `description` | `str \| None` | `None` | Helper text |
+
+!!! example "Time Range Selection"
+
+    ```python title="radio_example.py"
+    from holysheet import RadioGroup
+
+    RadioGroup(
+        label="Time Range",
+        options=[
+            {"label": "Last 7 days", "value": "7d"},
+            {"label": "Last 30 days", "value": "30d"},
+            {"label": "Last 90 days", "value": "90d"},
+            {"label": "Year to date", "value": "ytd"},
+        ],
+        default_value="30d",
+        description="Select analysis period",
+    )
+    ```

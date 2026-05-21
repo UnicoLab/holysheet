@@ -1,12 +1,12 @@
 # Block Types Overview
 
-HolySheet ships with **26 block types** organized into five categories. Each block is a Pydantic v2 model with full type safety and validation.
+HolySheet ships with **47 block types** organized into five categories. Each block is a Pydantic v2 model with full type safety and validation.
 
 ---
 
 ## :bar_chart: Quick Reference
 
-### :chart_with_upwards_trend: Charts (9 types)
+### :chart_with_upwards_trend: Charts (15 types)
 
 | Block | Type Key | Description | Key Props |
 |:------|:---------|:------------|:----------|
@@ -19,16 +19,23 @@ HolySheet ships with **26 block types** organized into five categories. Each blo
 | [`GaugeChart`](charts.md#gaugechart) | `gauge` | Speedometer gauge | `value`, `min`, `max`, `thresholds` |
 | [`FunnelChart`](charts.md#funnelchart) | `funnel_chart` | Conversion funnel | `data`, `name`, `value`, `height` |
 | [`TreemapChart`](charts.md#treemapchart) | `treemap_chart` | Hierarchical treemap | `data`, `name`, `value`, `category` |
+| [`HeatmapChart`](charts.md#heatmapchart) | `heatmap_chart` | 2D heatmap with color gradient | `data`, `x`, `y`, `value` |
+| [`CandlestickChart`](charts.md#candlestickchart) | `candlestick_chart` | Financial OHLC chart | `data`, `x`, `open`, `close`, `low`, `high` |
+| [`SankeyChart`](charts.md#sankeychart) | `sankey_chart` | Flow / energy diagram | `nodes`, `links` |
+| [`WaterfallChart`](charts.md#waterfallchart) | `waterfall_chart` | Waterfall / bridge chart | `data`, `category`, `value` |
+| [`BoxPlotChart`](charts.md#boxplotchart) | `boxplot_chart` | Statistical box plot | `data`, `categories` |
+| [`MapChart`](charts.md#mapchart) | `map_chart` | Geographical scatter | `data`, `lat`, `lng`, `value`, `name` |
 
-### :chart_with_upwards_trend: KPI & Metrics (3 types)
+### :chart_with_upwards_trend: KPI & Metrics (4 types)
 
 | Block | Type Key | Description | Key Props |
 |:------|:---------|:------------|:----------|
 | [`KPI`](kpi-metrics.md#kpi) | `kpi` | Key metric card with delta | `label`, `value`, `unit`, `delta`, `status` |
 | [`Metric`](kpi-metrics.md#metric) | `metric` | Compact inline metric | `label`, `value`, `unit`, `icon` |
 | [`StatComparison`](kpi-metrics.md#statcomparison) | `stat_comparison` | Side-by-side stat comparison | `title`, `items` |
+| `ProgressBar` | `progress` | Progress indicator | `label`, `value`, `max`, `color` |
 
-### :page_facing_up: Data & Content (6 types)
+### :page_facing_up: Data & Content (12 types)
 
 | Block | Type Key | Description | Key Props |
 |:------|:---------|:------------|:----------|
@@ -37,9 +44,15 @@ HolySheet ships with **26 block types** organized into five categories. Each blo
 | [`CodeBlock`](data-content.md#codeblock) | `code_block` | Syntax-highlighted code | `code`, `language`, `title` |
 | [`Image`](data-content.md#image) | `image` | Image display | `src`, `alt`, `caption`, `width` |
 | [`Alert`](data-content.md#alert) | `alert` | Callout / notification | `severity`, `title`, `message` |
-| [`ProgressBar`](data-content.md#progressbar) | `progress` | Progress indicator | `label`, `value`, `max`, `color` |
+| [`Timeline`](data-content.md#timeline) | `timeline` | Vertical event timeline | `events` |
+| [`Callout`](data-content.md#callout) | `callout` | Styled quote / highlight | `content`, `author`, `variant` |
+| [`JsonViewer`](data-content.md#jsonviewer) | `json_viewer` | Interactive JSON tree | `data`, `collapsed_depth` |
+| [`UserCard`](data-content.md#usercard) | `user_card` | Team member card | `name`, `role`, `stats` |
+| [`StatusList`](data-content.md#statuslist) | `status_list` | Status indicators list | `items` |
+| [`InfoList`](data-content.md#infolist) | `info_list` | Key-value pair display | `items` |
+| [`Sparkline`](data-content.md#sparkline) | `sparkline` | Tiny inline chart | `data`, `color` |
 
-### :bricks: Layout (5 types)
+### :bricks: Layout (7 types)
 
 | Block | Type Key | Description | Key Props |
 |:------|:---------|:------------|:----------|
@@ -48,14 +61,22 @@ HolySheet ships with **26 block types** organized into five categories. Each blo
 | [`Tabs`](layout.md#tabs) | `tabs` | Tabbed content panels | `tabs` (list of `{label, children}`) |
 | [`Divider`](layout.md#divider) | `divider` | Visual separator line | `label`, `variant` |
 | [`Accordion`](layout.md#accordion) | `accordion` | Collapsible panels | `panels` |
+| [`Stepper`](data-content.md#stepper) | `stepper` | Process / wizard steps | `steps`, `current_step` |
+| [`TagList`](data-content.md#taglist) | `tag_list` | Colored tag/badge chips | `tags` |
 
-### :video_game: Interactive (3 types)
+### :video_game: Interactive (9 types)
 
 | Block | Type Key | Description | Key Props |
 |:------|:---------|:------------|:----------|
 | [`Slider`](interactive.md#slider) | `slider` | Interactive slider | `label`, `min`, `max`, `step`, `default_value` |
 | [`NumberInput`](interactive.md#numberinput) | `number_input` | Number input with buttons | `label`, `min`, `max`, `step` |
 | [`Toggle`](interactive.md#toggle) | `toggle` | On/off switch | `label`, `description`, `default_value` |
+| [`Dropdown`](interactive.md#dropdown) | `dropdown` | Select from options | `label`, `options`, `default_value` |
+| [`TextInput`](interactive.md#textinput) | `text_input` | Text / textarea input | `label`, `placeholder`, `multiline` |
+| [`CheckboxGroup`](interactive.md#checkboxgroup) | `checkbox_group` | Multiple checkboxes | `label`, `options`, `default_values` |
+| [`RadioGroup`](interactive.md#radiogroup) | `radio_group` | Single-select radio buttons | `label`, `options`, `default_value` |
+| [`Embed`](data-content.md#embed) | `embed` | Iframe embed | `url`, `height` |
+| [`Video`](data-content.md#video) | `video` | HTML5 video player | `src`, `poster`, `controls` |
 
 ---
 
@@ -84,37 +105,10 @@ report.export_html("dashboard.html")
 
 ---
 
-## :frame_with_picture: Block Categories at a Glance
-
-```
-┌─────────────────────────────────────────────────────┐
-│                     Report                          │
-│                                                     │
-│  ┌─── KPI & Metrics ──┐  ┌──── Charts ──────────┐  │
-│  │ KPI                 │  │ LineChart  BarChart   │  │
-│  │ Metric              │  │ AreaChart  PieChart   │  │
-│  │ StatComparison      │  │ ScatterChart Radar    │  │
-│  └─────────────────────┘  │ Gauge Funnel Treemap  │  │
-│                           └──────────────────────┘  │
-│  ┌── Data & Content ──┐  ┌──── Layout ──────────┐  │
-│  │ DataTable           │  │ Section  Columns     │  │
-│  │ Markdown  CodeBlock │  │ Tabs     Divider     │  │
-│  │ Image  Alert        │  │ Accordion            │  │
-│  │ ProgressBar         │  └──────────────────────┘  │
-│  └─────────────────────┘                            │
-│  ┌── Interactive ─────┐                             │
-│  │ Slider NumberInput  │                            │
-│  │ Toggle              │                            │
-│  └─────────────────────┘                            │
-└─────────────────────────────────────────────────────┘
-```
-
----
-
 ## :arrow_right: Detailed References
 
 - **[KPI & Metrics](kpi-metrics.md)** — KPI cards, compact metrics, stat comparisons
-- **[Charts](charts.md)** — All 9 chart types with data format examples
-- **[Data & Content](data-content.md)** — Tables, markdown, code, images, alerts
+- **[Charts](charts.md)** — All 15 chart types with data format examples
+- **[Data & Content](data-content.md)** — Tables, markdown, code, images, alerts, timelines, and more
 - **[Layout](layout.md)** — Columns, sections, tabs, dividers, accordions
-- **[Interactive](interactive.md)** — Sliders, number inputs, toggles
+- **[Interactive](interactive.md)** — Sliders, toggles, dropdowns, text inputs, checkboxes, and radio buttons
