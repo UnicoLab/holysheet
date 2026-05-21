@@ -1,28 +1,45 @@
-name: Deploy Docs
+name: Docs
 
 on:
   push:
     branches: [main]
     paths:
-      - 'docs/**'
-      - 'mkdocs.yml'
-      - '.github/workflows/docs.yml'
+      - "docs/**"
+      - "mkdocs.yml"
+      - ".github/workflows/docs.yml"
+  # Deploy versioned docs when a release tag is created
+  release:
+    types: [published]
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Version alias to deploy (e.g. '0.3', 'dev'). Leave empty for auto-detect."
+        required: false
+        default: ""
+      set_latest:
+        description: "Set this version as 'latest' alias"
+        required: false
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write  # mike pushes to gh-pages branch
 
 concurrency:
-  group: "pages"
+  group: docs
   cancel-in-progress: false
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # mike needs full history
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -31,23 +48,79 @@ jobs:
 
       - name: Install docs dependencies
         run: |
-          pip install mkdocs>=1.6 mkdocs-material>=9.5 mkdocstrings[python]>=0.24 mkdocs-minify-plugin>=0.8
+          pip install \
+            "mkdocs>=1.6" \
+            "mkdocs-material>=9.5" \
+            "mkdocstrings[python]>=0.24" \
+            "mkdocs-minify-plugin>=0.8" \
+            "mike>=2.1"
 
-      - name: Build docs
+      - name: Configure Git for mike
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      # ── Determine version to deploy ───────────────────────────
+      - name: Determine version
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            # Release event: extract major.minor from tag (v0.3.0 → 0.3)
+            TAG="${{ github.event.release.tag_name }}"
+            VERSION="${TAG#v}"
+            MAJOR_MINOR=$(echo "$VERSION" | cut -d. -f1,2)
+            echo "version=$MAJOR_MINOR" >> $GITHUB_OUTPUT
+            echo "alias=latest" >> $GITHUB_OUTPUT
+            echo "set_default=true" >> $GITHUB_OUTPUT
+            echo "📦 Release deploy: $MAJOR_MINOR (from tag $TAG)"
+          elif [[ -n "${{ github.event.inputs.version }}" ]]; then
+            # Manual trigger with explicit version
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+            echo "alias=${{ github.event.inputs.set_latest == 'true' && 'latest' || '' }}" >> $GITHUB_OUTPUT
+            echo "set_default=${{ github.event.inputs.set_latest }}" >> $GITHUB_OUTPUT
+            echo "🔧 Manual deploy: ${{ github.event.inputs.version }}"
+          else
+            # Push to main: deploy as "dev"
+            echo "version=dev" >> $GITHUB_OUTPUT
+            echo "alias=" >> $GITHUB_OUTPUT
+            echo "set_default=false" >> $GITHUB_OUTPUT
+            echo "🔄 Dev deploy from main branch"
+          fi
+
+      # ── Build check ───────────────────────────────────────────
+      - name: Build docs (verify)
         run: mkdocs build --strict
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: site/
+      # ── Deploy with mike ──────────────────────────────────────
+      - name: Deploy versioned docs
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          ALIAS="${{ steps.version.outputs.alias }}"
+          SET_DEFAULT="${{ steps.version.outputs.set_default }}"
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          if [[ -n "$ALIAS" ]]; then
+            mike deploy --push --update-aliases "$VERSION" "$ALIAS"
+            echo "✅ Deployed $VERSION with alias '$ALIAS'"
+          else
+            mike deploy --push "$VERSION"
+            echo "✅ Deployed $VERSION"
+          fi
+
+          if [[ "$SET_DEFAULT" == "true" ]]; then
+            mike set-default --push latest
+            echo "✅ Set 'latest' as default"
+          fi
+
+      # ── Summary ───────────────────────────────────────────────
+      - name: Deploy summary
+        if: always()
+        run: |
+          echo "## Docs Deploy Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Key | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Version | \`${{ steps.version.outputs.version }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Alias   | \`${{ steps.version.outputs.alias || 'none' }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Default | \`${{ steps.version.outputs.set_default }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Trigger | \`${{ github.event_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📚 [View docs](https://unicolab.github.io/holysheet/)" >> $GITHUB_STEP_SUMMARY

@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_call:  # Allow release.yml to call this workflow
 
 jobs:
   test:
@@ -39,6 +40,9 @@ jobs:
           cp frontend/dist/index.html src/holysheet/renderer/index.html
           cp frontend/dist/assets/*.js src/holysheet/renderer/assets/app.js
           cp frontend/dist/assets/*.css src/holysheet/renderer/assets/app.css 2>/dev/null || touch src/holysheet/renderer/assets/app.css
+
+      - name: TypeScript check
+        run: cd frontend && npx tsc --noEmit
 
       - name: Install dependencies
         run: uv pip install --system -e ".[dev]"
