@@ -1,6 +1,28 @@
 # CHANGELOG
 
 
+## v0.2.1 (2026-05-21)
+
+### Bug Fixes
+
+- Correct pyproject.toml version to 0.3.0 (was reverted during rebase)
+  ([`7805f69`](https://github.com/UnicoLab/holysheet/commit/7805f690b52a1300dbb712aa43b8c4a25d1e902c))
+
+### Documentation
+
+- Update all documentation for v0.3.0 (47 block types)
+  ([`79b51fd`](https://github.com/UnicoLab/holysheet/commit/79b51fde1c28a6f52efa323eaa290e2d2025dd54))
+
+- Updated charts.md with 6 new chart types (HeatmapChart, CandlestickChart, SankeyChart,
+  WaterfallChart, BoxPlotChart, MapChart) - Updated data-content.md with 11 new content blocks
+  (Timeline, Callout, Embed, JsonViewer, UserCard, StatusList, InfoList, Stepper, TagList,
+  Sparkline, Video) - Updated interactive.md with 4 new interactive blocks (Dropdown, TextInput,
+  CheckboxGroup, RadioGroup) - Updated blocks/index.md with all 47 block types - Updated
+  api-reference.md with 21 new constructor signatures - Updated changelog.md with v0.3.0 release
+  notes - Updated index.md landing page (47 blocks, 15 charts) - Updated getting-started.md block
+  count reference - Updated README.md with complete block reference
+
+
 ## v0.2.0 (2026-05-21)
 
 ### Features
