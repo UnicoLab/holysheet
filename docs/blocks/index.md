@@ -1,12 +1,12 @@
 # Block Types Overview
 
-HolySheet ships with **47 block types** organized into five categories. Each block is a Pydantic v2 model with full type safety and validation.
+HolySheet ships with **53 block types** organized into five categories. Each block is a Pydantic v2 model with full type safety and validation.
 
 ---
 
 ## :bar_chart: Quick Reference
 
-### :chart_with_upwards_trend: Charts (15 types)
+### :chart_with_upwards_trend: Charts (18 types)
 
 | Block | Type Key | Description | Key Props |
 |:------|:---------|:------------|:----------|
@@ -25,6 +25,9 @@ HolySheet ships with **47 block types** organized into five categories. Each blo
 | [`WaterfallChart`](charts.md#waterfallchart) | `waterfall_chart` | Waterfall / bridge chart | `data`, `category`, `value` |
 | [`BoxPlotChart`](charts.md#boxplotchart) | `boxplot_chart` | Statistical box plot | `data`, `categories` |
 | [`MapChart`](charts.md#mapchart) | `map_chart` | Geographical scatter | `data`, `lat`, `lng`, `value`, `name` |
+| [`GanttChart`](charts.md#ganttchart) | `gantt_chart` | Project timeline / Gantt chart | `tasks`, `height` |
+| [`DAGChart`](charts.md#dagchart) | `dag_chart` | Directed acyclic graph | `nodes`, `edges`, `layout` |
+| [`CorrelationMatrix`](charts.md#correlationmatrix) | `correlation_matrix` | Statistical correlation heatmap | `matrix`, `labels`, `height` |
 
 ### :chart_with_upwards_trend: KPI & Metrics (4 types)
 
@@ -35,7 +38,7 @@ HolySheet ships with **47 block types** organized into five categories. Each blo
 | [`StatComparison`](kpi-metrics.md#statcomparison) | `stat_comparison` | Side-by-side stat comparison | `title`, `items` |
 | `ProgressBar` | `progress` | Progress indicator | `label`, `value`, `max`, `color` |
 
-### :page_facing_up: Data & Content (12 types)
+### :page_facing_up: Data & Content (14 types)
 
 | Block | Type Key | Description | Key Props |
 |:------|:---------|:------------|:----------|
@@ -51,8 +54,10 @@ HolySheet ships with **47 block types** organized into five categories. Each blo
 | [`StatusList`](data-content.md#statuslist) | `status_list` | Status indicators list | `items` |
 | [`InfoList`](data-content.md#infolist) | `info_list` | Key-value pair display | `items` |
 | [`Sparkline`](data-content.md#sparkline) | `sparkline` | Tiny inline chart | `data`, `color` |
+| [`Scorecard`](data-content.md#scorecard) | `scorecard` | Conditional color metric grid | `data`, `value_column`, `thresholds` |
+| [`DataProfile`](data-content.md#dataprofile) | `data_profile` | Auto-EDA column statistics | `columns` |
 
-### :bricks: Layout (7 types)
+### :bricks: Layout (8 types)
 
 | Block | Type Key | Description | Key Props |
 |:------|:---------|:------------|:----------|
@@ -63,6 +68,7 @@ HolySheet ships with **47 block types** organized into five categories. Each blo
 | [`Accordion`](layout.md#accordion) | `accordion` | Collapsible panels | `panels` |
 | [`Stepper`](data-content.md#stepper) | `stepper` | Process / wizard steps | `steps`, `current_step` |
 | [`TagList`](data-content.md#taglist) | `tag_list` | Colored tag/badge chips | `tags` |
+| [`Compare`](layout.md#compare) | `compare` | Side-by-side comparison container | `left_children`, `right_children`, `mode` |
 
 ### :video_game: Interactive (9 types)
 
@@ -91,7 +97,7 @@ report = Report(title="Dashboard", theme="dark")
 
 # Just instantiate and add
 report.add(KPI(label="Revenue", value="$1.2M", delta="+12%", status="positive"))
-report.add(LineChart(title="Trend", data=my_data, x="date", y="revenue"))
+report.add(LineChart(title="Trend", data=my_data, x="date", y="revenue"))  # (1)!
 
 report.export_html("dashboard.html")
 ```
@@ -108,7 +114,7 @@ report.export_html("dashboard.html")
 ## :arrow_right: Detailed References
 
 - **[KPI & Metrics](kpi-metrics.md)** — KPI cards, compact metrics, stat comparisons
-- **[Charts](charts.md)** — All 15 chart types with data format examples
-- **[Data & Content](data-content.md)** — Tables, markdown, code, images, alerts, timelines, and more
-- **[Layout](layout.md)** — Columns, sections, tabs, dividers, accordions
+- **[Charts](charts.md)** — All 18 chart types with data format examples
+- **[Data & Content](data-content.md)** — Tables, markdown, code, images, alerts, timelines, scorecards, and more
+- **[Layout](layout.md)** — Columns, sections, tabs, dividers, accordions, compare containers
 - **[Interactive](interactive.md)** — Sliders, toggles, dropdowns, text inputs, checkboxes, and radio buttons

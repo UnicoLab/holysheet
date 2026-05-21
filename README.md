@@ -145,15 +145,15 @@ pip install holysheet[all]
 
 ## 🧱 Block Reference
 
-HolySheet ships with **47 block types** organized into five categories:
+HolySheet ships with **53 block types** organized into six categories:
 
-### 📊 Charts (15)
+### 📊 Charts (18)
 
 | Block | Description | Key Props |
 |---|---|---|
-| `LineChart` | Multi-series line chart | `data`, `x`, `y`, `series` |
-| `AreaChart` | Filled area chart | `data`, `x`, `y`, `series` |
-| `BarChart` | Grouped/stacked bar chart | `data`, `x`, `y`, `series` |
+| `LineChart` | Multi-series line chart | `data`, `x`, `y`, `series`, `annotations` |
+| `AreaChart` | Filled area chart | `data`, `x`, `y`, `series`, `annotations` |
+| `BarChart` | Grouped/stacked bar chart | `data`, `x`, `y`, `series`, `annotations` |
 | `PieChart` | Pie / donut chart | `data`, `name`, `value` |
 | `ScatterChart` | Scatter / bubble plot | `data`, `x`, `y`, `size`, `category` |
 | `RadarChart` | Radar / spider chart | `data`, `indicators` |
@@ -166,21 +166,26 @@ HolySheet ships with **47 block types** organized into five categories:
 | `WaterfallChart` | Waterfall / bridge chart | `data`, `category`, `value` |
 | `BoxPlotChart` | Statistical box plot | `data`, `categories` |
 | `MapChart` | Geographical scatter | `data`, `lat`, `lng`, `value`, `name` |
+| `GanttChart` | Project timeline 🆕 | `tasks` `[{name, start, end, progress}]` |
+| `DAGChart` | Directed acyclic graph 🆕 | `nodes`, `edges`, `layout` |
+| `CorrelationMatrix` | Correlation heatmap 🆕 | `matrix`, `labels` |
 
-### 📈 Metrics (4)
+### 📈 Metrics (6)
 
 | Block | Description | Key Props |
 |---|---|---|
-| `KPI` | Key metric card with delta | `label`, `value`, `unit`, `delta`, `status` |
+| `KPI` | Key metric card with delta + tooltips | `label`, `value`, `unit`, `delta`, `status`, `tooltip_detail` |
 | `Metric` | Compact inline metric | `label`, `value`, `unit`, `icon` |
 | `ProgressBar` | Progress indicator | `label`, `value`, `max`, `color` |
 | `StatComparison` | Side-by-side comparison | `title`, `items` |
+| `Scorecard` | Conditional color metric grid 🆕 | `data`, `columns`, `thresholds` |
+| `DataProfile` | Auto-EDA summary cards 🆕 | `columns` `[{name, dtype, count, ...}]` |
 
 ### 📝 Content (12)
 
 | Block | Description | Key Props |
 |---|---|---|
-| `DataTable` | Searchable, paginated table | `data`, `columns`, `searchable`, `paginated` |
+| `DataTable` | Searchable table + conditional formatting | `data`, `columns`, `formatting`, `downloadable` |
 | `Markdown` | Rich text content | `content` |
 | `CodeBlock` | Syntax-highlighted code | `code`, `language`, `title` |
 | `Image` | Image display | `src`, `alt`, `caption` |
@@ -193,7 +198,7 @@ HolySheet ships with **47 block types** organized into five categories:
 | `InfoList` | Key-value pair display | `items` `[{key, value, icon}]` |
 | `Sparkline` | Tiny inline chart | `data`, `color`, `show_area` |
 
-### 📐 Layout (7)
+### 📐 Layout (8)
 
 | Block | Description | Key Props |
 |---|---|---|
@@ -204,6 +209,7 @@ HolySheet ships with **47 block types** organized into five categories:
 | `Accordion` | Collapsible content panels | `panels` (list of `{title, children}`) |
 | `Stepper` | Process / wizard steps | `steps` `[{label, description, status}]` |
 | `TagList` | Colored tag/badge chips | `tags` `[{label, color}]` |
+| `Compare` | Side-by-side comparison layout 🆕 | `left_label`, `right_label`, `left_children`, `right_children` |
 
 ### 🎮 Interactive (9)
 
@@ -409,8 +415,73 @@ holysheet validate report.json
 # Serve a report locally (opens browser)
 holysheet serve report.json
 
+# Hot-reload dev server — auto-refreshes on Python script changes
+holysheet dev my_report.py --port 8000
+
+# Lint a report for best practices
+holysheet lint my_report.py --strict
+
+# Compare two report versions
+holysheet diff old_report.json new_report.json
+
 # Show version
 holysheet version
+```
+
+---
+
+## 🔥 Advanced Features
+
+### Custom Themes
+
+```python
+from holysheet import Report, Theme
+
+brand = Theme(name="acme", primary="#FF6B00", background="#0A0A0F", font="Satoshi")
+report = Report(title="Acme Report", theme=brand)
+```
+
+### Multi-Page Reports
+
+```python
+report.add_page("Overview", [KPI(label="Revenue", value="$1.2M")])
+report.add_page("Details", [DataTable(title="Breakdown", data=df)])
+```
+
+### Chart Annotations
+
+```python
+report.add(LineChart(
+    title="Revenue", data=df, x="month", y="revenue",
+    annotations=[{"x": "Mar", "text": "Product Launch", "color": "#22d3ee"}]
+))
+```
+
+### Global Filters
+
+```python
+report.add_filter("region", type="dropdown", options=["NA", "EU", "APAC"])
+```
+
+### Jupyter Integration
+
+```python
+report.show()  # Renders inline in Jupyter notebook
+```
+
+### Password Protection & Expiry
+
+```python
+report.export_html("secure.html", password="s3cret")  # AES-256 encrypted
+Report(title="Temp", expires="2025-12-31")  # Auto-expires
+```
+
+### Report Templates
+
+```python
+from holysheet.templates import SalesDashboard, ExecutiveSummary, OpsMonitor
+
+blocks = SalesDashboard(data={"kpis": {"revenue": "$1.2M", "deals_won": 42}})
 ```
 
 ---
@@ -519,15 +590,22 @@ HolySheet uses [python-semantic-release](https://github.com/python-semantic-rele
 
 ## 🗺️ Roadmap
 
-- [ ] 📊 Additional chart types (Sankey, Gantt, DAG, Heatmap)
+- [x] 📊 Advanced chart types (Sankey, Gantt, DAG, Correlation Matrix)
+- [x] 🔍 Interactive filters and global filter bar
+- [x] 📑 Multi-page tabbed report navigation
+- [x] 🎨 Custom theme API + enterprise branding
+- [x] 🔐 Password-protected & expiring reports
+- [x] 📥 CSV download buttons on tables & charts
+- [x] 📓 Jupyter notebook integration
+- [x] 🎯 Chart annotations (vertical lines, point markers)
+- [x] 📽️ Presentation mode (sections as slides)
+- [x] 🌗 Dark/Light theme toggle in viewer
+- [x] 🏗️ Report templates (SalesDashboard, ExecutiveSummary, OpsMonitor)
+- [x] 🔧 Hot-reload dev server + report linting + report diff CLI
 - [ ] 🤖 AI narrative blocks (auto-generated insights)
-- [ ] 🔍 Interactive filters and cross-chart drill-down
-- [ ] 📑 Tabbed navigation across report pages
 - [ ] 📄 PDF export
 - [ ] 📊 PowerPoint export
 - [ ] 🧩 Custom React component injection
-- [ ] 🎨 Enterprise theme gallery + custom theme API
-- [ ] 🔐 Signed / offline report bundles
 - [ ] 💬 Local chatbot over report data
 
 ---

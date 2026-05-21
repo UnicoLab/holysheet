@@ -332,6 +332,76 @@ Accordion(panels=[
 
 ---
 
+## Compare
+
+Side-by-side comparison container for placing two groups of blocks next to each other. Ideal for A/B comparisons, before/after views, and plan comparisons.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `title` | `str \| None` | `None` | Container title |
+| `left_children` | `list[Block]` | `[]` | Blocks for the left panel |
+| `right_children` | `list[Block]` | `[]` | Blocks for the right panel |
+| `left_label` | `str \| None` | `None` | Left panel header label |
+| `right_label` | `str \| None` | `None` | Right panel header label |
+| `mode` | `"side_by_side" \| "overlay"` | `"side_by_side"` | Comparison display mode |
+
+### Side-by-Side Comparison
+
+```python title="compare_side_by_side.py"
+from holysheet import Compare, KPI, LineChart, BarChart
+
+Compare(
+    title="Q3 vs Q4 Performance",
+    left_label="Q3 2026",
+    right_label="Q4 2026",
+    left_children=[
+        KPI(label="Revenue", value="$3.1M", delta="+15%", status="positive"),
+        LineChart(title="Monthly Revenue", data=q3_data, x="month", y="revenue"),
+    ],
+    right_children=[
+        KPI(label="Revenue", value="$4.2M", delta="+22%", status="positive"),
+        LineChart(title="Monthly Revenue", data=q4_data, x="month", y="revenue"),
+    ],
+)
+```
+
+### Plan Comparison
+
+```python title="compare_plans.py"
+from holysheet import Compare, Markdown
+
+Compare(
+    title="Pricing Plans",
+    left_label="Starter — $29/mo",
+    right_label="Enterprise — $199/mo",
+    left_children=[
+        Markdown(content="""
+- ✅ 5 reports/month
+- ✅ 3 themes
+- ❌ Custom themes
+- ❌ Password protection
+- ❌ API access
+"""),
+    ],
+    right_children=[
+        Markdown(content="""
+- ✅ Unlimited reports
+- ✅ All themes
+- ✅ Custom themes
+- ✅ Password protection
+- ✅ API access
+"""),
+    ],
+)
+```
+
+!!! tip "Compare vs Columns"
+    `Compare` is similar to `Columns(widths=[6, 6])` but adds dedicated labels for each side and visual styling that emphasizes the comparison context. Use `Columns` for general side-by-side layout, and `Compare` when you want to explicitly highlight differences between two groups.
+
+---
+
 ## :jigsaw: Layout Patterns
 
 ### Full Dashboard Layout

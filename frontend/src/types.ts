@@ -1,6 +1,6 @@
 // ─── HolySheet Type Definitions ───────────────────────────────────────────────
 
-export type ThemeName = 'light' | 'dark' | 'executive';
+export type ThemeName = 'light' | 'dark' | 'executive' | string;
 
 export type KPIStatus = 'positive' | 'negative' | 'neutral';
 
@@ -10,6 +10,15 @@ export interface ReportFeatures {
   theme_switch?: boolean;
   presentation_mode?: boolean;
   download_buttons?: boolean;
+  multi_page?: boolean;
+  widget_mode?: boolean;
+  filters?: Array<{
+    key: string;
+    type: string;
+    label: string;
+    options: any[];
+    default?: any;
+  }>;
 }
 
 // ─── Report Spec ──────────────────────────────────────────────────────────────
@@ -20,8 +29,15 @@ export interface ReportSpec {
   subtitle?: string;
   theme: ThemeName;
   created_at: string;
-  blocks: BlockSpec[];
+  blocks: BlockSpec[] | PageSpec[];
   features?: ReportFeatures;
+  custom_theme?: Record<string, any>;
+  expires?: string;
+}
+
+export interface PageSpec {
+  label: string;
+  blocks: BlockSpec[];
 }
 
 // ─── Block Spec (generic envelope) ────────────────────────────────────────────

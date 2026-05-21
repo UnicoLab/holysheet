@@ -72,6 +72,7 @@ class KPI(Block):
         delta: Optional change indicator (e.g. "+12.3%").
         status: Semantic status: ``'positive'``, ``'negative'``, or ``'neutral'``.
         description: Optional helper text below the value.
+        tooltip_detail: Optional rich tooltip with breakdown items.
     """
 
     type: Literal["kpi"] = "kpi"
@@ -81,10 +82,11 @@ class KPI(Block):
     delta: str | None = None
     status: Literal["positive", "negative", "neutral"] | None = None
     description: str | None = None
+    tooltip_detail: dict[str, Any] | None = None
 
     def to_props(self) -> dict[str, Any]:
         """Return KPI props dict."""
-        return {
+        props: dict[str, Any] = {
             "label": self.label,
             "value": self.value,
             "unit": self.unit,
@@ -92,6 +94,9 @@ class KPI(Block):
             "status": self.status,
             "description": self.description,
         }
+        if self.tooltip_detail:
+            props["tooltip_detail"] = self.tooltip_detail
+        return props
 
 
 class Metric(Block):
@@ -137,6 +142,8 @@ class LineChart(Block):
         y: Column name(s) for Y axis.
         series: Optional grouping column for multi-series.
         height: Chart height in pixels.
+        annotations: Optional list of annotation markers on the chart.
+        downloadable: If ``True``, show a CSV download button.
     """
 
     type: Literal["line_chart"] = "line_chart"
@@ -146,10 +153,12 @@ class LineChart(Block):
     y: str | list[str] | None = None
     series: list[str] | None = None
     height: int = 360
+    annotations: list[dict[str, Any]] | None = None
+    downloadable: bool = False
 
     def to_props(self) -> dict[str, Any]:
         """Return line chart props with data converted to records."""
-        return {
+        props: dict[str, Any] = {
             "title": self.title,
             "data": to_records(self.data),
             "x": self.x,
@@ -157,6 +166,11 @@ class LineChart(Block):
             "series": self.series,
             "height": self.height,
         }
+        if self.annotations:
+            props["annotations"] = self.annotations
+        if self.downloadable:
+            props["downloadable"] = True
+        return props
 
 
 class AreaChart(Block):
@@ -169,6 +183,8 @@ class AreaChart(Block):
         y: Column name(s) for Y axis.
         series: Optional grouping column for multi-series.
         height: Chart height in pixels.
+        annotations: Optional list of annotation markers.
+        downloadable: If ``True``, show a CSV download button.
     """
 
     type: Literal["area_chart"] = "area_chart"
@@ -178,10 +194,12 @@ class AreaChart(Block):
     y: str | list[str] | None = None
     series: list[str] | None = None
     height: int = 360
+    annotations: list[dict[str, Any]] | None = None
+    downloadable: bool = False
 
     def to_props(self) -> dict[str, Any]:
         """Return area chart props with data converted to records."""
-        return {
+        props: dict[str, Any] = {
             "title": self.title,
             "data": to_records(self.data),
             "x": self.x,
@@ -189,6 +207,11 @@ class AreaChart(Block):
             "series": self.series,
             "height": self.height,
         }
+        if self.annotations:
+            props["annotations"] = self.annotations
+        if self.downloadable:
+            props["downloadable"] = True
+        return props
 
 
 class BarChart(Block):
@@ -210,10 +233,12 @@ class BarChart(Block):
     y: str | list[str] | None = None
     series: list[str] | None = None
     height: int = 360
+    annotations: list[dict[str, Any]] | None = None
+    downloadable: bool = False
 
     def to_props(self) -> dict[str, Any]:
         """Return bar chart props with data converted to records."""
-        return {
+        props: dict[str, Any] = {
             "title": self.title,
             "data": to_records(self.data),
             "x": self.x,
@@ -221,6 +246,11 @@ class BarChart(Block):
             "series": self.series,
             "height": self.height,
         }
+        if self.annotations:
+            props["annotations"] = self.annotations
+        if self.downloadable:
+            props["downloadable"] = True
+        return props
 
 
 class PieChart(Block):
@@ -273,10 +303,12 @@ class ScatterChart(Block):
     size: str | None = None
     category: str | None = None
     height: int = 360
+    annotations: list[dict[str, Any]] | None = None
+    downloadable: bool = False
 
     def to_props(self) -> dict[str, Any]:
         """Return scatter chart props with data converted to records."""
-        return {
+        props: dict[str, Any] = {
             "title": self.title,
             "data": to_records(self.data),
             "x": self.x,
@@ -285,6 +317,11 @@ class ScatterChart(Block):
             "category": self.category,
             "height": self.height,
         }
+        if self.annotations:
+            props["annotations"] = self.annotations
+        if self.downloadable:
+            props["downloadable"] = True
+        return props
 
 
 class RadarChart(Block):
@@ -423,6 +460,8 @@ class DataTable(Block):
         columns: Optional explicit column definitions.
         searchable: Whether the table supports text search.
         paginated: Whether the table is paginated.
+        formatting: Conditional formatting rules per column.
+        downloadable: If ``True``, show a CSV download button.
     """
 
     type: Literal["data_table"] = "data_table"
@@ -431,6 +470,8 @@ class DataTable(Block):
     columns: list[str] | None = None
     searchable: bool = True
     paginated: bool = True
+    formatting: dict[str, dict[str, Any]] | None = None
+    downloadable: bool = False
 
     def to_props(self) -> dict[str, Any]:
         """Return data table props with data converted to records."""
@@ -438,13 +479,18 @@ class DataTable(Block):
         cols = self.columns
         if cols is None and records:
             cols = list(records[0].keys())
-        return {
+        props: dict[str, Any] = {
             "title": self.title,
             "data": records,
             "columns": cols,
             "searchable": self.searchable,
             "paginated": self.paginated,
         }
+        if self.formatting:
+            props["formatting"] = self.formatting
+        if self.downloadable:
+            props["downloadable"] = True
+        return props
 
 
 # ---------------------------------------------------------------------------

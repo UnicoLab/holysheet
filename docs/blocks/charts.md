@@ -1,6 +1,6 @@
 # Charts
 
-HolySheet includes **15 chart types** powered by Apache ECharts, providing rich interactive visualizations with tooltips, legends, and responsive sizing.
+HolySheet includes **18 chart types** powered by Apache ECharts, providing rich interactive visualizations with tooltips, legends, and responsive sizing.
 
 ---
 
@@ -607,6 +607,172 @@ Geographical scatter chart for visualizing data points on a coordinate grid.
 
 ---
 
+## GanttChart
+
+Project timeline / Gantt chart for visualizing task schedules, durations, and progress.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `title` | `str` | *required* | Chart title |
+| `tasks` | `list[dict]` | `[]` | List of task dicts with `name`, `start`, `end`, and optional `progress`, `color`, `group` |
+| `height` | `int` | `400` | Chart height in pixels |
+
+**Task dict keys:** `name` (str, required), `start` (str, required — date like `"2026-01-15"`), `end` (str, required), `progress` (float 0–1, optional), `color` (str, optional hex color), `group` (str, optional — for row grouping)
+
+!!! example "Sprint Planning"
+
+    ```python title="gantt_example.py"
+    from holysheet import GanttChart
+
+    GanttChart(
+        title="Q1 Project Timeline",
+        tasks=[
+            {"name": "Requirements", "start": "2026-01-06", "end": "2026-01-17",
+             "progress": 1.0, "group": "Phase 1"},
+            {"name": "Design", "start": "2026-01-13", "end": "2026-01-31",
+             "progress": 0.8, "group": "Phase 1"},
+            {"name": "Backend Dev", "start": "2026-01-27", "end": "2026-03-07",
+             "progress": 0.45, "group": "Phase 2"},
+            {"name": "Frontend Dev", "start": "2026-02-03", "end": "2026-03-14",
+             "progress": 0.3, "group": "Phase 2"},
+            {"name": "Testing", "start": "2026-03-02", "end": "2026-03-21",
+             "progress": 0.0, "group": "Phase 3"},
+            {"name": "Launch", "start": "2026-03-21", "end": "2026-03-28",
+             "progress": 0.0, "group": "Phase 3"},
+        ],
+        height=350,
+    )
+    ```
+
+!!! tip "Progress Values"
+    The `progress` field is a float between `0.0` (not started) and `1.0` (complete). It controls the filled portion of each task bar.
+
+---
+
+## DAGChart
+
+Directed acyclic graph (DAG) for visualizing workflows, dependency trees, and pipeline architectures.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `title` | `str` | *required* | Chart title |
+| `nodes` | `list[dict]` | `[]` | List of node dicts with `id`, `label`, and optional `color`, `icon` |
+| `edges` | `list[dict]` | `[]` | List of edge dicts with `from`, `to`, and optional `label` |
+| `height` | `int` | `400` | Chart height in pixels |
+| `layout` | `"force" \| "circular"` | `"force"` | Graph layout algorithm |
+
+!!! example "Data Pipeline"
+
+    ```python title="dag_example.py"
+    from holysheet import DAGChart
+
+    DAGChart(
+        title="ML Pipeline",
+        nodes=[
+            {"id": "ingest", "label": "Data Ingestion"},
+            {"id": "clean", "label": "Cleaning"},
+            {"id": "features", "label": "Feature Engineering"},
+            {"id": "train", "label": "Model Training"},
+            {"id": "eval", "label": "Evaluation"},
+            {"id": "deploy", "label": "Deployment"},
+        ],
+        edges=[
+            {"from": "ingest", "to": "clean"},
+            {"from": "clean", "to": "features"},
+            {"from": "features", "to": "train"},
+            {"from": "train", "to": "eval"},
+            {"from": "eval", "to": "deploy"},
+            {"from": "eval", "to": "train", "label": "retrain"},
+        ],
+        layout="force",
+    )
+    ```
+
+### Layout Options
+
+=== "Force (default)"
+
+    Physics-based force-directed layout — nodes repel each other and edges act as springs. Best for general-purpose graphs.
+
+    ```python
+    DAGChart(title="Graph", nodes=nodes, edges=edges, layout="force")
+    ```
+
+=== "Circular"
+
+    Nodes arranged in a circle. Best for small graphs where you want to emphasize connectivity.
+
+    ```python
+    DAGChart(title="Graph", nodes=nodes, edges=edges, layout="circular")
+    ```
+
+!!! info "DAGChart vs SankeyChart"
+    Use `DAGChart` when you want to show **structural relationships** (dependencies, workflows). Use `SankeyChart` when you want to show **flow quantities** (revenue attribution, energy transfers).
+
+---
+
+## CorrelationMatrix
+
+Statistical correlation heatmap for visualizing pairwise relationships between variables.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `title` | `str` | *required* | Chart title |
+| `matrix` | `list[list[float]]` | `[]` | 2D array of correlation values (typically in `[-1, 1]`) |
+| `labels` | `list[str]` | `[]` | Row/column labels (must match matrix dimensions) |
+| `height` | `int` | `400` | Chart height in pixels |
+
+!!! example "Feature Correlations"
+
+    ```python title="correlation_example.py"
+    from holysheet import CorrelationMatrix
+
+    CorrelationMatrix(
+        title="Feature Correlation Matrix",
+        labels=["Revenue", "Users", "NPS", "Churn", "ARPU"],
+        matrix=[
+            [ 1.00,  0.85,  0.62, -0.45,  0.91],
+            [ 0.85,  1.00,  0.71, -0.38,  0.76],
+            [ 0.62,  0.71,  1.00, -0.55,  0.58],
+            [-0.45, -0.38, -0.55,  1.00, -0.42],
+            [ 0.91,  0.76,  0.58, -0.42,  1.00],
+        ],
+    )
+    ```
+
+### With Pandas
+
+```python title="correlation_pandas.py"
+import pandas as pd
+from holysheet import CorrelationMatrix
+
+df = pd.DataFrame({
+    "revenue": [100, 200, 150, 300, 250],
+    "users": [1000, 2000, 1500, 3000, 2500],
+    "nps": [72, 78, 75, 82, 80],
+    "churn": [5.2, 4.1, 4.8, 3.2, 3.8],
+})
+
+corr = df.corr()
+
+CorrelationMatrix(
+    title="Metric Correlations",
+    labels=corr.columns.tolist(),
+    matrix=corr.values.tolist(),
+)
+```
+
+!!! tip "Pre-computed Matrix"
+    Unlike most chart blocks, `CorrelationMatrix` does **not** accept raw `data`. You need to pre-compute the correlation matrix (e.g. via `df.corr()` in pandas).
+
+---
+
 ## :bulb: Chart Tips
 
 ### Setting Chart Height
@@ -650,6 +816,9 @@ LineChart(
 | `WaterfallChart` | `category` (str) | `value` (str) | — |
 | `BoxPlotChart` | `categories` (list) | `data` (nested lists) | — |
 | `MapChart` | `lat`, `lng` (str) | `value` (str) | `name` |
+| `GanttChart` | — | `tasks` (list) | `height` |
+| `DAGChart` | `nodes` (list) | `edges` (list) | `layout` |
+| `CorrelationMatrix` | `labels` (list) | `matrix` (nested lists) | — |
 
 !!! warning "Data Required"
-    Most charts require `data` to be provided. If `data` is `None`, the chart will render with no data points. The exceptions are `GaugeChart` (uses a direct `value` prop), `SankeyChart` (uses `nodes`/`links`), and `BoxPlotChart` (uses nested lists).
+    Most charts require `data` to be provided. If `data` is `None`, the chart will render with no data points. The exceptions are `GaugeChart` (uses a direct `value` prop), `SankeyChart` (uses `nodes`/`links`), `BoxPlotChart` (uses nested lists), `GanttChart` (uses `tasks`), `DAGChart` (uses `nodes`/`edges`), and `CorrelationMatrix` (uses `matrix`/`labels`).

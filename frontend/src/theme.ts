@@ -147,9 +147,19 @@ function makeComponentOverrides(palette: (typeof palettes)[keyof typeof palettes
 
 // ─── Theme Builder ────────────────────────────────────────────────────────────
 
+type KnownTheme = 'dark' | 'light' | 'executive';
+
+function isKnownTheme(name: string): name is KnownTheme {
+  return name in palettes;
+}
+
+function getPaletteFor(name: ThemeName) {
+  return isKnownTheme(name) ? palettes[name] : palettes.dark;
+}
+
 function buildTheme(name: ThemeName): Theme {
-  const palette = palettes[name];
-  const isDark = name === 'dark' || name === 'executive';
+  const palette = getPaletteFor(name);
+  const isDark = name === 'dark' || name === 'executive' || !isKnownTheme(name);
 
   return createTheme({
     palette: {
@@ -187,18 +197,27 @@ function buildTheme(name: ThemeName): Theme {
 
 // ─── Exported themes map ──────────────────────────────────────────────────────
 
-export const themes: Record<ThemeName, Theme> = {
+export const themes: Record<string, Theme> = {
   dark: buildTheme('dark'),
   light: buildTheme('light'),
   executive: buildTheme('executive'),
 };
 
+// Build theme on demand for custom theme names
+export function getTheme(name: ThemeName): Theme {
+  if (themes[name]) return themes[name];
+  const newTheme = buildTheme(name);
+  themes[name] = newTheme;
+  return newTheme;
+}
+
 // ─── Chart color accessor ─────────────────────────────────────────────────────
 
 export function getChartColors(themeName: ThemeName): string[] {
-  return [...palettes[themeName].chartColors];
+  return [...getPaletteFor(themeName).chartColors];
 }
 
 export function getPalette(themeName: ThemeName) {
-  return palettes[themeName];
+  return getPaletteFor(themeName);
 }
+

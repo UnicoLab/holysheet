@@ -650,6 +650,169 @@ Columns(children=[
 
 ---
 
+## Scorecard
+
+Conditional color metric grid that highlights values based on configurable thresholds. Perfect for health dashboards and KPI grids.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `title` | `str \| None` | `None` | Grid title |
+| `data` | `list[dict]` | `[]` | List of row dicts |
+| `value_column` | `str` | *required* | Column key containing the metric value |
+| `thresholds` | `list[dict]` | `[]` | List of threshold rules with `min`, `max`, `color`, `label` |
+| `columns` | `list[str] \| None` | `None` | Columns to display (auto-inferred if omitted) |
+
+**Threshold dict keys:** `min` (float), `max` (float), `color` (str, hex color), `label` (str, optional descriptive label like `"Good"`)
+
+!!! example "Service Health Scorecard"
+
+    ```python title="scorecard_example.py"
+    from holysheet import Scorecard
+
+    Scorecard(
+        title="Service Health",
+        data=[
+            {"service": "API Gateway", "uptime": 99.99, "p99_ms": 45},
+            {"service": "Auth Service", "uptime": 99.95, "p99_ms": 120},
+            {"service": "ML Pipeline", "uptime": 98.50, "p99_ms": 850},
+            {"service": "Email Queue", "uptime": 99.80, "p99_ms": 230},
+        ],
+        value_column="uptime",
+        thresholds=[
+            {"min": 99.9, "max": 100, "color": "#10B981", "label": "Healthy"},
+            {"min": 99.0, "max": 99.9, "color": "#F59E0B", "label": "Degraded"},
+            {"min": 0, "max": 99.0, "color": "#EF4444", "label": "Critical"},
+        ],
+    )
+    ```
+
+!!! tip "Multiple Scorecards"
+    Use `Columns` to place multiple scorecards side-by-side, each tracking a different `value_column`:
+
+    ```python
+    Columns(children=[
+        Scorecard(title="Uptime", data=data, value_column="uptime", thresholds=uptime_rules),
+        Scorecard(title="Latency", data=data, value_column="p99_ms", thresholds=latency_rules),
+    ])
+    ```
+
+---
+
+## DataProfile
+
+Auto-EDA (Exploratory Data Analysis) summary that displays column-level statistics for a dataset. Ideal for data quality checks and quick profiling.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| `title` | `str \| None` | `None` | Profile title |
+| `columns` | `list[dict]` | `[]` | List of column profile dicts |
+
+**Column profile dict keys:**
+
+| Key | Type | Description |
+|:----|:-----|:------------|
+| `name` | `str` | Column name |
+| `dtype` | `str` | Data type (e.g. `"float64"`, `"object"`, `"int64"`) |
+| `count` | `int` | Non-null count |
+| `null_count` | `int` | Number of null values |
+| `null_pct` | `float` | Null percentage (0–100) |
+| `unique` | `int` | Unique value count |
+| `mean` | `float \| None` | Mean (numeric columns) |
+| `std` | `float \| None` | Standard deviation |
+| `min` | `float \| str \| None` | Minimum value |
+| `max` | `float \| str \| None` | Maximum value |
+| `top` | `str \| None` | Most frequent value (categorical) |
+| `freq` | `int \| None` | Frequency of most common value |
+
+!!! example "Dataset Profile"
+
+    ```python title="dataprofile_example.py"
+    from holysheet import DataProfile
+
+    DataProfile(
+        title="Customer Dataset Profile",
+        columns=[
+            {
+                "name": "revenue",
+                "dtype": "float64",
+                "count": 10000,
+                "null_count": 12,
+                "null_pct": 0.12,
+                "unique": 8942,
+                "mean": 45230.50,
+                "std": 12840.32,
+                "min": 1200.00,
+                "max": 198500.00,
+            },
+            {
+                "name": "segment",
+                "dtype": "object",
+                "count": 10000,
+                "null_count": 0,
+                "null_pct": 0.0,
+                "unique": 4,
+                "top": "Enterprise",
+                "freq": 4200,
+            },
+            {
+                "name": "churn_risk",
+                "dtype": "float64",
+                "count": 9800,
+                "null_count": 200,
+                "null_pct": 2.0,
+                "unique": 98,
+                "mean": 0.23,
+                "std": 0.18,
+                "min": 0.01,
+                "max": 0.95,
+            },
+        ],
+    )
+    ```
+
+### With Pandas
+
+Generate a `DataProfile` directly from a pandas DataFrame:
+
+```python title="dataprofile_pandas.py"
+import pandas as pd
+from holysheet import DataProfile
+
+df = pd.read_csv("customers.csv")
+
+# Build column profiles from pandas describe
+profiles = []
+for col in df.columns:
+    profile = {
+        "name": col,
+        "dtype": str(df[col].dtype),
+        "count": int(df[col].count()),
+        "null_count": int(df[col].isna().sum()),
+        "null_pct": round(df[col].isna().mean() * 100, 2),
+        "unique": int(df[col].nunique()),
+    }
+    if df[col].dtype in ("float64", "int64"):
+        profile["mean"] = round(df[col].mean(), 2)
+        profile["std"] = round(df[col].std(), 2)
+        profile["min"] = round(df[col].min(), 2)
+        profile["max"] = round(df[col].max(), 2)
+    else:
+        profile["top"] = str(df[col].mode().iloc[0]) if len(df[col].mode()) > 0 else None
+        profile["freq"] = int(df[col].value_counts().iloc[0]) if len(df[col]) > 0 else None
+    profiles.append(profile)
+
+DataProfile(title=f"Profile: {df.shape[0]} rows × {df.shape[1]} cols", columns=profiles)
+```
+
+!!! tip "Data Quality Dashboards"
+    Combine `DataProfile` with `Scorecard` thresholds to create automated data quality monitoring dashboards.
+
+---
+
 ## Video
 
 HTML5 video embed with poster image, controls, and responsive sizing.

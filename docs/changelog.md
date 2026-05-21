@@ -7,6 +7,96 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.0] — 2026-05-21
+
+### :sparkles: Features, Templates & CLI (53 Block Types)
+
+A feature-packed release that adds custom themes, multi-page reports, global filters, report templates, new CLI commands, Jupyter integration, and 6 new block types.
+
+### Added
+
+#### New Block Types (6 new → 53 total)
+
+**Charts (3 new → 18 total):**
+
+- `GanttChart` — Project timeline / Gantt chart with task progress bars
+- `DAGChart` — Directed acyclic graph for workflows and dependency trees
+- `CorrelationMatrix` — Statistical correlation heatmap (2D matrix)
+
+**Data & Content (2 new → 14 total):**
+
+- `Scorecard` — Conditional color metric grid with configurable thresholds
+- `DataProfile` — Auto-EDA summary with per-column statistics
+
+**Layout (1 new → 8 total):**
+
+- `Compare` — Side-by-side comparison container with labeled panels
+
+#### Custom Theme API
+
+- `Theme` class for building fully branded dashboards
+- Extends any built-in theme (`dark`, `light`, `executive`) with custom overrides
+- Supports: colors (14 tokens), fonts (body, heading, mono), chart palette
+- Pass `Theme` instances directly to `Report(theme=...)`
+
+#### Multi-Page Reports
+
+- `Report.add_page(label, children)` for tabbed / sidebar navigation
+- Sidebar navigation auto-generated from page labels
+- Full support for nested blocks within pages
+
+#### Global Filters
+
+- `Report.add_filter(key, type, label, options, default)`
+- Filter types: `dropdown`, `date_range`, `text`
+- Filters rendered in the report header, affecting all blocks
+
+#### Feature Flags
+
+- `theme_switch=True` — Dark/light mode toggle for viewers
+- `presentation_mode=True` — Fullscreen slideshow mode
+- `download_buttons=True` — Per-block CSV/PNG export
+
+#### Report Security & Distribution
+
+- `password="..."` — Client-side AES encryption with PBKDF2 key derivation
+- `expires="2026-12-31"` — Expiration date overlay
+- `compress=True` — Gzip-compress embedded JSON data
+
+#### Widget Export
+
+- `Report.export_widget(path, block_ids)` — Lightweight embeddable widgets
+- Filter to specific block IDs for minimal, targeted embeds
+
+#### Jupyter Integration
+
+- `_repr_html_()` — Auto-display in Jupyter notebooks
+- `Report.show(height)` — Explicit rendering with custom iframe height
+- Base64-encoded iframe for full CSS isolation
+
+#### CLI Commands (3 new → 6 total)
+
+- `holysheet dev SCRIPT` — Hot-reload dev server with live rebuild
+- `holysheet lint SOURCE [--strict]` — Report linter with 7 rules
+- `holysheet diff FILE_A FILE_B` — Compare two JSON spec files
+
+#### Report Templates
+
+- `SalesDashboard` — KPIs, revenue trend, pipeline funnel, top clients
+- `ExecutiveSummary` — Scorecards, highlights, trends, milestones
+- `OpsMonitor` — Service health, gauges, error rate, latency, SLOs
+
+### Changed
+
+- Updated block overview from 47 to 53 block types
+- Updated chart reference from 15 to 18 chart types
+- Updated data & content reference from 12 to 14 types
+- Updated layout reference from 7 to 8 types
+- Added Features, Templates, and CLI documentation pages
+- Updated `mkdocs.yml` navigation with new pages
+
+---
+
 ## [0.3.0] — 2026-05-21
 
 ### :sparkles: 21 New Block Types (47 Total)
@@ -164,14 +254,15 @@ The initial release of HolySheet — a Python-first report compiler that generat
 Planned for future releases:
 
 - :material-robot: AI narrative blocks (auto-generated insights)
-- :material-filter: Interactive filters and cross-chart drill-down
 - :material-file-pdf-box: PDF export
 - :material-presentation: PowerPoint export
 - :material-puzzle: Custom React component injection
-- :material-palette-swatch: Enterprise theme gallery + custom theme API
 - :material-lock: Signed / offline report bundles
-- :material-chart-gantt: Gantt chart and DAG visualization
 - :material-chat: Local chatbot over report data
+- :material-earth: i18n / localization support
+- :material-api: Webhook-triggered report rebuilds
+
+**Shipped in v0.4.0:** ~~Interactive filters~~, ~~Custom theme API~~, ~~Gantt chart and DAG visualization~~
 
 ---
 

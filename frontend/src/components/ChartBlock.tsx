@@ -263,7 +263,7 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
 
     const uniqueX = series ? [...new Set(xValues)] : xValues;
 
-    return {
+    const result = {
       tooltip: { ...tooltipStyle, trigger: 'axis' },
       legend: hasMultipleSeries ? {
         top: 0,
@@ -300,7 +300,59 @@ export const ChartBlock: React.FC<ChartBlockProps> = ({ block }) => {
       },
       series: seriesData,
     };
-  }, [data, block.type, x, y, name, value, series, isDark]);
+
+    // ── Inject annotations as markLine / markPoint ─────────────
+    const annotations = block.props.annotations;
+    if (annotations && annotations.length > 0 && seriesData.length > 0) {
+      const markLineData: any[] = [];
+      const markPointData: any[] = [];
+
+      annotations.forEach((ann: any) => {
+        if (ann.x !== undefined) {
+          // Vertical line annotation
+          markLineData.push({
+            xAxis: ann.x,
+            label: {
+              formatter: ann.text || '',
+              color: ann.color || accentColors[0],
+              fontSize: 11,
+              fontWeight: 500,
+            },
+            lineStyle: {
+              color: ann.color || accentColors[0],
+              type: 'dashed',
+              width: 1.5,
+            },
+          });
+        }
+        if (ann.y !== undefined && ann.x !== undefined) {
+          // Point annotation
+          markPointData.push({
+            coord: [ann.x, ann.y],
+            name: ann.text || '',
+            value: ann.text || '',
+            itemStyle: { color: ann.color || accentColors[0] },
+          });
+        }
+      });
+
+      if (markLineData.length > 0) {
+        seriesData[0].markLine = {
+          silent: true,
+          symbol: 'none',
+          data: markLineData,
+        };
+      }
+      if (markPointData.length > 0) {
+        seriesData[0].markPoint = {
+          data: markPointData,
+          label: { show: true, fontSize: 10 },
+        };
+      }
+    }
+
+    return result;
+  }, [data, block.type, x, y, name, value, series, isDark, block.props.annotations]);
 
   const handleDownload = () => {
     if (!data || data.length === 0) return;

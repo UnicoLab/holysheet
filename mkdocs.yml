@@ -128,9 +128,12 @@ nav:
     - Data & Content: blocks/data-content.md
     - Layout: blocks/layout.md
     - Interactive: blocks/interactive.md
+  - Features: features/index.md
+  - Templates: templates/index.md
   - Data Sources: data-sources.md
   - Themes: themes.md
   - Export & Deploy: export.md
+  - CLI Reference: cli/index.md
   - API Reference: api-reference.md
   - Examples: examples.md
   - Changelog: changelog.md
