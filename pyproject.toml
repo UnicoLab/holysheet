@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "holysheet"
-version = "0.2.0"
+version = "0.1.0"
 description = "Python-first report compiler that generates beautiful, portable, interactive React dashboards."
 readme = "README.md"
 license = "MIT"
@@ -65,6 +65,7 @@ Homepage = "https://github.com/UnicoLab/HolySheet"
 Documentation = "https://github.com/UnicoLab/HolySheet#readme"
 Repository = "https://github.com/UnicoLab/HolySheet"
 Issues = "https://github.com/UnicoLab/HolySheet/issues"
+
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/holysheet"]
