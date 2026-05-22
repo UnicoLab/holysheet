@@ -135,7 +135,7 @@ jobs:
   # ── Publish to PyPI ───────────────────────────────────────────
   PYPI_PUBLISH:
     needs: [SEMANTIC_RELEASE]
-    if: ${{ needs.SEMANTIC_RELEASE.outputs.release_created == 'true' || inputs.SKIP_RELEASE }}
+    if: always() && (needs.SEMANTIC_RELEASE.outputs.release_created == 'true' || inputs.SKIP_RELEASE) && !failure()
     runs-on: ubuntu-latest
 
     steps:
@@ -238,7 +238,7 @@ jobs:
   # ── Update Documentation ─────────────────────────────────────
   UPDATE_DOCS:
     needs: [SEMANTIC_RELEASE, PYPI_PUBLISH]
-    if: ${{ (needs.SEMANTIC_RELEASE.outputs.release_created == 'true' && !failure()) || inputs.SKIP_RELEASE }}
+    if: always() && (needs.SEMANTIC_RELEASE.outputs.release_created == 'true' || inputs.SKIP_RELEASE) && !failure()
     runs-on: ubuntu-latest
 
     steps:
