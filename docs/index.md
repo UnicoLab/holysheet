@@ -70,11 +70,11 @@ report.export_html("report.html")  # ← Open in any browser. Done.
 
     Generate a standalone `.html` file (~1.5 MB) with everything embedded. Share via email, Slack, S3, or Confluence.
 
--   :material-chart-box:{ .lg .middle } **47 Block Types**
+-   :material-chart-box:{ .lg .middle } **57 Block Types**
 
     ---
 
-    KPIs, 15 chart types (line, bar, area, pie, scatter, radar, gauge, funnel, treemap, heatmap, candlestick, sankey, waterfall, boxplot, map), tables, timelines, user cards, and more.
+    KPIs, 18 chart types, 9 interactive controls, data tables, AI insights, timelines, user cards, and more.
 
 -   :material-palette:{ .lg .middle } **3 Premium Themes**
 
@@ -102,7 +102,7 @@ report.export_html("report.html")  # ← Open in any browser. Done.
 
 | Feature | Description |
 |:--------|:------------|
-| :material-cube-outline: **47 block types** | KPI, Metric, 15 chart types, DataTable, Timeline, UserCard, StatusList, Callout, JsonViewer, layout blocks, interactive controls |
+| :material-cube-outline: **57 block types** | KPI, Metric, 18 chart types, AI insights, data tables, Google Sheets, SQL blocks, layout containers, interactive controls |
 | :material-palette-swatch: **3 themes** | `dark`, `light`, `executive` — each with a full design system |
 | :material-export: **3 export modes** | Standalone HTML, folder (for hosting), or raw JSON |
 | :material-console: **CLI included** | `holysheet validate`, `holysheet serve`, `holysheet version` |
@@ -127,7 +127,7 @@ report.export_html("report.html")  # ← Open in any browser. Done.
 
     ---
 
-    Reference for all 47 block types with examples.
+    Reference for all 57 block types with examples.
 
 -   :material-palette:{ .lg .middle } **[Themes](themes.md)**
 

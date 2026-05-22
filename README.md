@@ -5,7 +5,7 @@
 <h1 align="center">📊 HolySheet</h1>
 
 <p align="center">
-  <strong>Python-first report compiler that turns raw data into beautiful,<br>portable, interactive React dashboards — in a single line of code.</strong>
+  <strong>Python-first report compiler that turns raw data into stunning,<br>interactive React dashboards — zero frontend knowledge required.</strong>
 </p>
 
 <p align="center">
@@ -14,6 +14,7 @@
 
 <p align="center">
   <a href="https://pypi.org/project/holysheet"><img alt="PyPI" src="https://img.shields.io/pypi/v/holysheet?color=3B82F6&style=flat-square"></a>
+  <a href="https://pypi.org/project/holysheet"><img alt="Downloads" src="https://img.shields.io/pypi/dm/holysheet?color=F59E0B&style=flat-square"></a>
   <a href="https://pypi.org/project/holysheet"><img alt="Python" src="https://img.shields.io/pypi/pyversions/holysheet?color=8B5CF6&style=flat-square"></a>
   <a href="https://github.com/UnicoLab/holysheet/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/UnicoLab/holysheet?color=10B981&style=flat-square"></a>
   <a href="https://github.com/UnicoLab/holysheet/actions"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/UnicoLab/holysheet/ci.yml?style=flat-square&label=CI"></a>
@@ -62,10 +63,21 @@
 
 ## ✨ What is HolySheet?
 
-**HolySheet** generates stunning, self-contained, interactive HTML dashboards powered by React + ECharts — without requiring the end user to install Node.js, npm, or any frontend tooling.
+**HolySheet** generates stunning, self-contained, interactive HTML dashboards powered by **React** + **Apache ECharts** — without requiring Node.js, npm, or any frontend tooling.
 
 > *Write your dashboard in Python. Get a gorgeous interactive report as a single HTML file.*  
 > *No server. No dependencies. Just open it in a browser. Holy Sheet, that's easy!*
+
+### ⚡ Key Highlights
+
+- 🧱 **57 block types** — 18 charts, 6 metrics, 14 content/data, 8 layout, 9 interactive, AI insights + SQL
+- 🎨 **3 premium themes** — Dark, Light, and Executive with full design systems
+- 📦 **Single-file export** — One `.html` file (~1.5 MB) with everything embedded
+- 🐼 **Any data source** — Pandas, Polars, dicts, lists, Google Sheets
+- 🤖 **AI-powered insights** — OpenAI, Anthropic, Google Gemini integration
+- 🔐 **Enterprise features** — Password protection, expiring reports, PDF export
+- 🔧 **Developer tools** — CLI, hot-reload dev server, linting, report diff
+- 📱 **Responsive & PWA** — Works on mobile, supports offline mode
 
 ```python
 from holysheet import Report, KPI, LineChart, DataTable
@@ -369,6 +381,8 @@ report.add(Markdown(content="""
 Portfolio health remains strong with 42 active projects delivering on schedule.
 Risk-adjusted returns are trending positively, with a 12% improvement in delivery confidence.
 """))
+
+# Note: Variables like risk_df, team_df, projects_df should be your DataFrames
 
 # KPI grid inside a section
 report.add(Section(
@@ -768,12 +782,14 @@ HolySheet uses [python-semantic-release](https://github.com/python-semantic-rele
 
 Contributions are welcome! Here's how to get started:
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feat/amazing-feature`)
-3. Make your changes with tests
-4. Run the checks: `make lint && make typecheck && make test`
-5. Commit with [conventional commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, etc.)
-6. Open a Pull Request
+1. **Fork** the repository
+2. **Create** a feature branch: `git checkout -b feat/amazing-feature`
+3. **Write** your changes with tests
+4. **Check** everything passes: `make lint && make typecheck && make test`
+5. **Commit** with [conventional commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `docs:`, etc.
+6. **Open** a Pull Request
+
+See the [Contributing Guide](CONTRIBUTING.md) for detailed instructions.
 
 ---
 
@@ -789,4 +805,13 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 <p align="center">
   <sub>Holy Sheet, that's a beautiful dashboard! 🙌</sub>
+</p>
+
+<p align="center">
+  <sub>
+    <a href="https://pypi.org/project/holysheet">PyPI</a> ·
+    <a href="https://unicolab.github.io/holysheet">Documentation</a> ·
+    <a href="https://github.com/UnicoLab/holysheet/issues">Issues</a> ·
+    <a href="https://github.com/UnicoLab/holysheet/discussions">Discussions</a>
+  </sub>
 </p>

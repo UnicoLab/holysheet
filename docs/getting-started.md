@@ -220,7 +220,7 @@ Exports just the dashboard specification as JSON.
 
 Now that you have the basics down, explore:
 
-- **[Block Types](blocks/index.md)** — Learn about all 47 available blocks
+- **[Block Types](blocks/index.md)** — Learn about all 57 available blocks
 - **[Themes](themes.md)** — Choose and customize your theme
 - **[Data Sources](data-sources.md)** — Work with pandas, polars, and more
 - **[Examples Gallery](examples.md)** — Copy-paste real-world dashboards
