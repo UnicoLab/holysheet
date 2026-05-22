@@ -1,61 +1,52 @@
-name: Release
+name: "Semantic Release"
 
 on:
   workflow_dispatch:
     inputs:
-      dry_run:
-        description: "Dry run (no publish, no tag)"
+      DRY_RUN:
         required: false
-        default: "false"
-        type: choice
-        options:
-          - "false"
-          - "true"
-      force:
-        description: "Force a release even if no qualifying commits"
+        default: false
+        type: boolean
+        description: "Run in dry run mode (no actual release)"
+      SKIP_RELEASE:
         required: false
-        default: "false"
-        type: choice
-        options:
-          - "false"
-          - "true"
-      skip_ci:
+        default: false
+        type: boolean
+        description: "Skip semantic release and use existing version (for recovery)"
+      RELEASE_VERSION:
+        required: false
+        type: string
+        description: "Manually specify release version (only for manual publish/docs jobs)"
+      SKIP_CI:
+        required: false
+        default: false
+        type: boolean
         description: "Skip CI gate (use for recovery)"
-        required: false
-        default: "false"
-        type: choice
-        options:
-          - "false"
-          - "true"
 
 permissions:
   contents: write
+  pages: write
   id-token: write
 
 jobs:
   # ── Gate: wait for CI to pass ─────────────────────────────────
-  ci:
-    if: ${{ github.event.inputs.skip_ci != 'true' }}
+  CI_GATE:
+    if: ${{ !inputs.SKIP_CI }}
     uses: ./.github/workflows/ci.yml
 
-  # ── Semantic Release + PyPI ───────────────────────────────────
-  release:
-    needs: ci
-    if: always() && (needs.ci.result == 'success' || github.event.inputs.skip_ci == 'true')
+  # ── Semantic Release: version bump + changelog + tag ──────────
+  SEMANTIC_RELEASE:
+    needs: CI_GATE
+    if: always() && (needs.CI_GATE.result == 'success' || inputs.SKIP_CI) && !inputs.SKIP_RELEASE
     runs-on: ubuntu-latest
-    concurrency: release
-
-    environment:
-      name: pypi
-      url: https://pypi.org/project/holysheet/
-
     outputs:
-      released: ${{ steps.release.outputs.released }}
-      version: ${{ steps.release.outputs.version }}
-      tag: ${{ steps.release.outputs.tag }}
+      new_release_version: ${{ steps.semantic-release.outputs.version }}
+      release_created: ${{ steps.semantic-release.outputs.released }}
+      release_tag: ${{ steps.semantic-release.outputs.tag }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -65,6 +56,13 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install semantic-release
+        run: uv pip install --system python-semantic-release>=9.0
+
+      # Build frontend before semantic-release runs build_command
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -72,17 +70,9 @@ jobs:
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v4
-
-      - name: Install semantic-release
-        run: uv pip install --system python-semantic-release>=9.0
-
-      # ── Build frontend assets ─────────────────────────────────
       - name: Build frontend
         run: |
-          cd frontend && npm ci && npm run build
-          cd ..
+          cd frontend && npm ci && npm run build && cd ..
           mkdir -p src/holysheet/renderer/assets
           cp frontend/dist/index.html src/holysheet/renderer/index.html
           cp frontend/dist/assets/*.js src/holysheet/renderer/assets/app.js
@@ -93,54 +83,234 @@ jobs:
           test -f src/holysheet/renderer/assets/app.js || (echo "FATAL: app.js missing" && exit 1)
           echo "✓ Renderer assets verified: $(du -sh src/holysheet/renderer/assets/)"
 
-      # ── Semantic Release: version bump + changelog + tag ──────
       - name: Python Semantic Release
-        id: release
+        id: semantic-release
+        if: ${{ !inputs.DRY_RUN }}
         uses: python-semantic-release/python-semantic-release@v9.21.1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          force: ${{ github.event.inputs.force || 'false' }}
-          root_options: ${{ github.event.inputs.dry_run == 'true' && '--noop' || '' }}
 
-      # ── Publish to PyPI (trusted publishing) ──────────────────
-      - name: Publish to PyPI
-        id: publish_pypi
-        if: steps.release.outputs.released == 'true'
-        uses: pypa/gh-action-pypi-publish@release/v1
+      - name: Python Semantic Release (dry run)
+        if: ${{ inputs.DRY_RUN }}
+        uses: python-semantic-release/python-semantic-release@v9.21.1
         with:
-          packages-dir: dist/
-        continue-on-error: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          root_options: "--noop"
 
-      # ── Retry PyPI publish on failure ─────────────────────────
-      - name: Retry PyPI publish
-        if: steps.publish_pypi.outcome == 'failure'
-        run: |
-          echo "First PyPI publish attempt failed, retrying in 10s..."
-          sleep 10
-        # Retry the action
-      - name: Retry PyPI publish (attempt 2)
-        if: steps.publish_pypi.outcome == 'failure'
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: dist/
-
-      # ── Upload to GitHub Releases ─────────────────────────────
-      - name: Publish to GitHub Releases
-        if: steps.release.outputs.released == 'true'
+      - name: Upload to GitHub Releases
+        if: steps.semantic-release.outputs.released == 'true'
         uses: python-semantic-release/publish-action@v9.21.1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ steps.release.outputs.tag }}
+          tag: ${{ steps.semantic-release.outputs.tag }}
 
-      # ── Summary ───────────────────────────────────────────────
-      - name: Release summary
+      - name: Save release version for recovery
+        if: steps.semantic-release.outputs.released == 'true'
+        run: |
+          mkdir -p .github/recovery
+          echo "${{ steps.semantic-release.outputs.version }}" > .github/recovery/last_release_version.txt
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git add .github/recovery/last_release_version.txt
+          git commit -m "chore: save last release version for recovery [skip ci]" || echo "No changes to commit"
+          git push || echo "Failed to push recovery file"
+
+      - name: Show release information
         if: always()
         run: |
-          echo "## Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "## Semantic Release Summary" >> $GITHUB_STEP_SUMMARY
           echo "| Key | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|-----|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Released | \`${{ steps.release.outputs.released }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| Version  | \`${{ steps.release.outputs.version }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| Tag      | \`${{ steps.release.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| Dry Run  | \`${{ github.event.inputs.dry_run || 'false' }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| PyPI     | \`${{ steps.publish_pypi.outcome || 'skipped' }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Released | \`${{ steps.semantic-release.outputs.released || 'false' }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Version  | \`${{ steps.semantic-release.outputs.version || 'N/A' }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Tag      | \`${{ steps.semantic-release.outputs.tag || 'N/A' }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Dry Run  | \`${{ inputs.DRY_RUN }}\` |" >> $GITHUB_STEP_SUMMARY
+
+  # ── Publish to PyPI ───────────────────────────────────────────
+  PYPI_PUBLISH:
+    needs: [SEMANTIC_RELEASE]
+    if: ${{ needs.SEMANTIC_RELEASE.outputs.release_created == 'true' || inputs.SKIP_RELEASE }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Get version to publish
+        id: get_version
+        run: |
+          if [[ "${{ inputs.SKIP_RELEASE }}" == "true" ]]; then
+            if [[ -n "${{ inputs.RELEASE_VERSION }}" ]]; then
+              echo "Using manually specified version: ${{ inputs.RELEASE_VERSION }}"
+              echo "VERSION=${{ inputs.RELEASE_VERSION }}" >> $GITHUB_OUTPUT
+            else
+              if [[ -f ".github/recovery/last_release_version.txt" ]]; then
+                VERSION=$(cat .github/recovery/last_release_version.txt)
+                echo "Using recovered version: $VERSION"
+                echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+              else
+                echo "ERROR: No version specified and no recovery file found"
+                exit 1
+              fi
+            fi
+          else
+            echo "Using version from semantic-release: ${{ needs.SEMANTIC_RELEASE.outputs.new_release_version }}"
+            echo "VERSION=${{ needs.SEMANTIC_RELEASE.outputs.new_release_version }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install build tools
+        run: uv pip install --system build twine
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build frontend
+        run: |
+          cd frontend && npm ci && npm run build && cd ..
+          mkdir -p src/holysheet/renderer/assets
+          cp frontend/dist/index.html src/holysheet/renderer/index.html
+          cp frontend/dist/assets/*.js src/holysheet/renderer/assets/app.js
+          cp frontend/dist/assets/*.css src/holysheet/renderer/assets/app.css 2>/dev/null || touch src/holysheet/renderer/assets/app.css
+
+      - name: Verify renderer assets
+        run: |
+          test -f src/holysheet/renderer/assets/app.js || (echo "FATAL: app.js missing" && exit 1)
+          echo "✓ Renderer assets verified"
+
+      - name: Set version
+        run: |
+          echo "Setting package version to ${{ steps.get_version.outputs.VERSION }}"
+          sed -i 's/^version = .*/version = "${{ steps.get_version.outputs.VERSION }}"/' pyproject.toml
+          sed -i 's/^__version__ = .*/__version__ = "${{ steps.get_version.outputs.VERSION }}"/' src/holysheet/__init__.py
+
+      - name: Build package
+        run: python -m build
+
+      - name: Publish to PyPI
+        id: publish_pypi
+        run: |
+          twine upload dist/* --username __token__ --password "$PYPI_TOKEN"
+        env:
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        continue-on-error: true
+
+      - name: Retry PyPI publish on failure
+        if: steps.publish_pypi.outcome == 'failure'
+        run: |
+          echo "First attempt failed, retrying..."
+          sleep 10
+          rm -rf dist
+          python -m build
+          twine upload dist/* --username __token__ --password "$PYPI_TOKEN"
+        env:
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+
+      - name: Publish summary
+        if: always()
+        run: |
+          echo "## PyPI Publish Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Key | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Version | \`${{ steps.get_version.outputs.VERSION }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Status  | \`${{ steps.publish_pypi.outcome || 'skipped' }}\` |" >> $GITHUB_STEP_SUMMARY
+
+  # ── Update Documentation ─────────────────────────────────────
+  UPDATE_DOCS:
+    needs: [SEMANTIC_RELEASE, PYPI_PUBLISH]
+    if: ${{ (needs.SEMANTIC_RELEASE.outputs.release_created == 'true' && !failure()) || inputs.SKIP_RELEASE }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Get version for docs
+        id: get_docs_version
+        run: |
+          if [[ "${{ inputs.SKIP_RELEASE }}" == "true" ]]; then
+            if [[ -n "${{ inputs.RELEASE_VERSION }}" ]]; then
+              echo "VERSION=${{ inputs.RELEASE_VERSION }}" >> $GITHUB_OUTPUT
+            else
+              if [[ -f ".github/recovery/last_release_version.txt" ]]; then
+                VERSION=$(cat .github/recovery/last_release_version.txt)
+                echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+              else
+                echo "ERROR: No version specified and no recovery file found"
+                exit 1
+              fi
+            fi
+          else
+            echo "VERSION=${{ needs.SEMANTIC_RELEASE.outputs.new_release_version }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install docs dependencies
+        run: |
+          pip install \
+            "mkdocs>=1.6" \
+            "mkdocs-material>=9.5" \
+            "mkdocstrings[python]>=0.24" \
+            "mkdocs-minify-plugin>=0.8" \
+            "mike>=2.1"
+
+      - name: Configure Git for mike
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch gh-pages branch
+        run: git fetch origin gh-pages:gh-pages || echo "No gh-pages branch exists yet"
+
+      - name: Deploy versioned docs
+        id: deploy_docs
+        run: |
+          VERSION="${{ steps.get_docs_version.outputs.VERSION }}"
+          # Extract major.minor for mike alias
+          MAJOR_MINOR=$(echo "$VERSION" | cut -d. -f1,2)
+          echo "Deploying documentation for version $MAJOR_MINOR (from $VERSION)"
+          mike deploy --push --update-aliases "$MAJOR_MINOR" latest
+          mike set-default --push latest
+          echo "✅ Deployed $MAJOR_MINOR with 'latest' alias and set as default"
+        continue-on-error: true
+
+      - name: Retry docs deploy on failure
+        if: steps.deploy_docs.outcome == 'failure'
+        run: |
+          echo "First attempt failed, retrying with --force..."
+          git fetch origin gh-pages:gh-pages --force
+          VERSION="${{ steps.get_docs_version.outputs.VERSION }}"
+          MAJOR_MINOR=$(echo "$VERSION" | cut -d. -f1,2)
+          mike deploy --push --update-aliases --force "$MAJOR_MINOR" latest
+          mike set-default --push latest
+
+      - name: Docs summary
+        if: always()
+        run: |
+          echo "## Docs Deploy Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Key | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Version | \`${{ steps.get_docs_version.outputs.VERSION }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Status  | \`${{ steps.deploy_docs.outcome || 'skipped' }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| URL     | https://unicolab.github.io/holysheet/ |" >> $GITHUB_STEP_SUMMARY

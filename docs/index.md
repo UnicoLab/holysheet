@@ -13,6 +13,13 @@ interactive dashboards — in a single line of code.
 </p>
 </div>
 
+<div style="text-align: center; margin: 2rem 0;">
+<img src="assets/screenshots/screenshot_dark_theme.png" alt="HolySheet Dark Theme Dashboard" style="max-width: 720px; width: 100%; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);" />
+<p style="font-size: 0.85rem; color: var(--md-default-fg-color--lighter); margin-top: 0.5rem;">
+<em>A complete dashboard generated from Python — one HTML file, zero frontend knowledge required.</em>
+</p>
+</div>
+
 <div style="text-align: center; margin: 1.5rem 0;">
 
 [![PyPI](https://img.shields.io/pypi/v/holysheet?color=3B82F6&style=flat-square)](https://pypi.org/project/holysheet)
