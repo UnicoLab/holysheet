@@ -1,36 +1,143 @@
 # CHANGELOG
 
-## v0.5.0 (2026-05-21)
+
+## v0.3.0 (2026-05-22)
+
+### Continuous Integration
+
+- Complete CI/CD pipeline with semantic-release, PyPI, and mike docs
+  ([`187731f`](https://github.com/UnicoLab/holysheet/commit/187731fd009352d498b094109804f15969861062))
+
+- ci.yml: add workflow_call trigger + TypeScript check step - release.yml: gate on CI, frontend
+  build before semantic-release, PyPI trusted publishing, manual trigger with dry-run/force options,
+  GitHub Release upload, job summary - docs.yml: rewrite with mike for versioned docs — auto-deploy
+  'dev' on push to main, deploy major.minor on release tag, manual trigger with version input -
+  mkdocs.yml: add mike plugin + version provider for header selector - pyproject.toml: add mike>=2.1
+  to docs deps
+
+- **release**: Add full CI/CD pipeline aligned with FlowyML
+  ([`06c2192`](https://github.com/UnicoLab/holysheet/commit/06c21924795d97d50b2e88a04b434f73e676ab67))
+
+- Bump version to 0.5.0 (sync pyproject.toml + __init__.py with CHANGELOG) - Add
+  .pre-commit-config.yaml (ruff, standard hooks, conventional commits) - Add PRECOMMITS.yml workflow
+  (PR title validation + pre-commit) - Add PR_PREVIEW.yml workflow (docs preview on PRs) - Add
+  MANUAL_PYPI_PUBLISH.yml workflow (recovery: manual PyPI publish) - Add MANUAL_DOCS_PUBLISH.yml
+  workflow (recovery: manual docs deploy) - Enhance ci.yml (dev branch, concurrency, coverage with
+  Codecov, path filters) - Enhance release.yml (retry logic, skip_ci option, release outputs) -
+  Enhance docs.yml (add dev branch to triggers) - Fix test_cli_commands.py to use dynamic
+  __version__ instead of hardcoded
+
+### Documentation
+
+- Update features documentation for v0.5.0 + fix mkdocs nav
+  ([`0804ba1`](https://github.com/UnicoLab/holysheet/commit/0804ba170c55da10042da44689e5b7462fcbb723))
+
+- Added documentation for: PDF Export, Anomaly Detection, AI Insight, Google Sheets, SQL Block,
+  Narration, Cloud Publish - Fixed broken nav reference: templates/ → report-templates/ - mkdocs
+  build --strict now passes clean
 
 ### Features
 
-- **AI Insight Block**: LLM-powered data narratives with OpenAI, Anthropic, and Google provider support
-- **Google Sheets Data Source**: Live data fetching from Google Sheets via gspread
-- **PDF Export**: `report.export_pdf()` with Playwright and Chrome headless browser fallback
-- **Anomaly Detection**: IQR-based outlier detection with MAD fallback on LineChart, AreaChart, BarChart
-- **SQL Block**: Client-side SQL engine supporting SELECT, WHERE, GROUP BY, ORDER BY, LIMIT
-- **Narration Block**: Web Speech API text-to-speech with autoplay support
-- **Auto-Narrate**: `report.auto_narrate()` generates plain text summaries from KPIs
-- **Cloud Publish CLI**: `holysheet publish` command for S3 and GCS deployment
-- **Cross-Block Filtering**: Reactive FilterBar with dropdown, text, date_range, and checkbox filter types
-- **Virtual Scrolling**: Tables with >200 rows auto-switch to virtualized rendering
-- **Report Navigator**: Floating minimap drawer with IntersectionObserver scroll tracking
-- **PWA Mode**: Installable dashboard with service worker and web manifest injection
-- **Responsive Layouts**: Breakpoint-aware column layouts (desktop/tablet/mobile)
+- Complete all 49 features — AI Insight, Google Sheets, anomaly fix, tests
+  ([`db3fc80`](https://github.com/UnicoLab/holysheet/commit/db3fc800686c3cf27961443f44f4716e114f00af))
 
-### Improvements
+NEW BLOCKS: - AIInsight: LLM-powered data narrative generation (OpenAI/Anthropic/Google) with
+  graceful fallback when provider SDK is not installed - GoogleSheet: data source block that fetches
+  from Google Sheets via gspread with graceful fallback when credentials are not configured
 
-- 57 block types (was 53)
-- 8 CLI commands (was 7): added `publish`
-- 311 tests (was 278)
-- Release workflow is now manual-only (`workflow_dispatch`)
-- Fixed 10 mypy type errors across 4 source files
-- Fixed mkdocs nav reference for templates documentation
+IMPROVEMENTS: - Anomaly detection: fixed IQR=0 edge case with MAD (Median Absolute Deviation)
+  fallback — now correctly flags outliers even in nearly-uniform data distributions
 
-### Dependencies
+TESTS (311 total, +33 new): - test_v050_features.py: comprehensive tests for AIInsight, GoogleSheet,
+  anomaly detection (6 cases), SqlBlock, NarrationBlock, auto_narrate, PDF export, publish CLI
 
-- New optional dependency groups: `pdf`, `ai`, `cloud`, `gsheets`
-- Install extras: `pip install holysheet[pdf]`, `pip install holysheet[ai]`, etc.
+BLOCK COUNT: 57 (was 55) FEATURE STATUS: 49/49 killer features implemented
+
+- Complete v0.4.0 — tests, docs, annotations, multi-page React
+  ([`8ab24a9`](https://github.com/UnicoLab/holysheet/commit/8ab24a9ed832aa065781897a7aad502c392f18b7))
+
+ENHANCEMENTS: - Chart annotations: LineChart/AreaChart/BarChart/ScatterChart now support
+  annotations=[{x, text, color}] for vertical event markers and point labels - KPI tooltip_detail:
+  KPI blocks support rich tooltip breakdowns on hover - DataTable formatting: conditional color_map,
+  data_bar, icon_map per column - downloadable flag: tables and charts can individually enable CSV
+  export - Multi-page React rendering: tabbed page navigation in the viewer - Custom theme types:
+  ThemeName accepts arbitrary strings for custom themes
+
+COMPREHENSIVE TEST SUITE (278 tests): - test_new_blocks.py: 54 tests for GanttChart, DAGChart,
+  CorrelationMatrix, Scorecard, DataProfile, Compare - test_features.py: 66 tests for Theme, feature
+  flags, multi-page, filters, expiry, compression, password, widget, Jupyter, templates -
+  test_cli_commands.py: 20 tests for dev/lint/diff/validate CLI commands
+
+DOCUMENTATION (v0.4.0): - docs/features/index.md: comprehensive feature guide -
+  docs/templates/index.md: template documentation - docs/cli/index.md: CLI command reference with
+  all 6 commands - docs/changelog.md: v0.4.0 changelog entry - docs/blocks/index.md: updated with 6
+  new block types - mkdocs.yml: updated navigation with new sections
+
+README: - Updated block count to 53 - Added Advanced Features section with code examples - Updated
+  CLI section with 3 new commands - Updated roadmap (12 items checked off)
+
+- Killer features v0.4.0 — 53 block types + advanced capabilities
+  ([`e26b93a`](https://github.com/UnicoLab/holysheet/commit/e26b93aa2fd8f21d0e46612bfba74d230801d990))
+
+NEW BLOCK TYPES (6 new → 53 total): - GanttChart: project timeline visualization (ECharts custom
+  series) - DAGChart: directed acyclic graph (ECharts graph layout) - CorrelationMatrix: statistical
+  correlation heatmap - Scorecard: conditional color metric grid - DataProfile: auto-EDA summary
+  cards - Compare: side-by-side comparison layout
+
+REPORT-LEVEL FEATURES: - Custom Theme API: Theme(name, primary, background, font, chart_palette) -
+  Multi-page reports: report.add_page('Overview', children=[...]) - Global filter bar:
+  report.add_filter('region', options=[...]) - Feature flags: theme_switch, presentation_mode,
+  download_buttons - Jupyter integration: _repr_html_() + report.show() - Password-protected
+  reports: Report(password='secret') - Expiring reports: Report(expires='2025-12-31') - Gzip
+  compression: Report(compress=True) - Widget export: report.export_widget('widget.html',
+  block_ids=[...])
+
+REACT APP FEATURES: - Dark/Light theme toggle in header - Presentation mode (sections as slides,
+  keyboard nav) - CSV download buttons on tables and charts - Conditional table formatting
+  (color_map, data_bar, icon_map) - Skeleton loading states for heavy components - KPI tooltip rich
+  cards with breakdown
+
+CLI COMMANDS (3 new): - holysheet dev: hot reload dev server with file watching - holysheet lint:
+  report linting with 7 rules - holysheet diff: compare two report JSON specs
+
+TEMPLATES: - SalesDashboard: pre-built sales dashboard - ExecutiveSummary: pre-built executive
+  report - OpsMonitor: pre-built operations dashboard
+
+- Production polish — docs, frontend, examples, optional deps
+  ([`56a5ae3`](https://github.com/UnicoLab/holysheet/commit/56a5ae3a69cdb71074b11491d8b7addb02ae4324))
+
+DOCUMENTATION: - README: updated to 57 blocks, added v0.5.0 features (AI, PDF, SQL, narration,
+  anomaly detection, cloud publish), updated install extras, updated roadmap - Blocks docs: added
+  SqlBlock, NarrationBlock, AIInsight, GoogleSheet reference - CLI docs: added 'publish' command
+  with S3/GCS examples - CHANGELOG: added comprehensive v0.5.0 release notes (13 features)
+
+FRONTEND: - AIInsightBlock.tsx: provider-aware card with gradient bg and accent colors -
+  GoogleSheetBlock.tsx: table with sticky header, error state, Google branding - registry.tsx:
+  registered ai_insight and google_sheet block types - Rebuilt frontend bundle (1,785 kB)
+
+PROJECT CONFIG: - pyproject.toml: added [pdf], [ai], [cloud], [gsheets] optional dep groups - Added
+  jupyter, pdf, ai, cloud keywords
+
+EXAMPLES: - v050_showcase.py: demonstrates anomaly detection, SQL, narration, filters
+
+- V0.5.0 — remaining killer features + CI fixes
+  ([`bcfcebe`](https://github.com/UnicoLab/holysheet/commit/bcfcebe4232a14510ccd8e480da3467af9f27dcc))
+
+NEW FEATURES: - PDF Export: report.export_pdf() via Playwright or headless Chrome - Anomaly
+  Detection: anomaly_detection=True on LineChart/AreaChart/BarChart uses IQR method to auto-annotate
+  outliers - SQL Block: inline SQL queries against report data (client-side engine) - Narration
+  Block: text-to-speech readback with Web Speech API - Auto Narrate: report.auto_narrate() generates
+  plain text from KPIs - Cloud Publish CLI: holysheet publish to S3/GCS - Cross-Block Reactivity:
+  FilterBar + FilterContext for client-side dropdown/text/date_range/checkbox filtering across all
+  charts & tables - Virtual Scrolling: tables >200 rows use virtualized rendering - Report
+  Navigator: floating minimap with block anchors + scroll tracking - PWA Mode: installable dashboard
+  with service worker - Responsive Columns: breakpoint-aware layouts (desktop/tablet/mobile)
+
+CI/CD FIXES: - Release workflow: manual-only (removed push trigger) - Fixed 10 mypy errors: dict
+  type args, list invariance, unused ignores, json.loads Any returns, features dict typing - All
+  quality gates green: mypy, ruff, pytest 278, TS, Vite build
+
+BLOCK COUNT: 55 (was 53) CLI COMMANDS: 8 (validate, serve, version, dev, lint, diff, publish)
 
 
 ## v0.2.1 (2026-05-21)
