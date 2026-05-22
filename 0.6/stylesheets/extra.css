@@ -1,0 +1,95 @@
+/* HolySheet Docs — Custom Styles */
+
+:root {
+  --hs-primary: #6C63FF;
+  --hs-secondary: #00D9FF;
+  --hs-gradient: linear-gradient(135deg, #6C63FF 0%, #00D9FF 100%);
+}
+
+/* Hero section styling */
+.md-typeset .hs-hero {
+  text-align: center;
+  padding: 2rem 0 1rem;
+}
+
+.md-typeset .hs-hero h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: var(--hs-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+}
+
+.md-typeset .hs-hero .hs-tagline {
+  font-size: 1.15rem;
+  color: var(--md-typeset-color);
+  opacity: 0.7;
+  max-width: 600px;
+  margin: 0 auto 1.5rem;
+}
+
+/* Feature grid */
+.md-typeset .hs-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.md-typeset .hs-feature-card {
+  padding: 1.25rem;
+  border-radius: 12px;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  transition: all 0.2s ease;
+}
+
+.md-typeset .hs-feature-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  border-color: var(--hs-primary);
+}
+
+.md-typeset .hs-feature-card h3 {
+  margin-top: 0;
+  font-size: 1rem;
+}
+
+.md-typeset .hs-feature-card p {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  margin-bottom: 0;
+}
+
+/* Badge styles */
+.md-typeset .hs-badge {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Block type table accent */
+.md-typeset table th {
+  white-space: nowrap;
+}
+
+/* Smooth code block animations */
+.md-typeset pre {
+  border-radius: 10px !important;
+}
+
+/* API signature styling */
+.md-typeset .hs-signature {
+  font-family: var(--md-code-font-family);
+  font-size: 0.85rem;
+  background: var(--md-code-bg-color);
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  border-left: 3px solid var(--hs-primary);
+  overflow-x: auto;
+}
