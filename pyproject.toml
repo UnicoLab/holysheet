@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "holysheet"
-version = "0.4.0"
+version = "0.5.0"
 description = "Python-first report compiler that generates beautiful, portable, interactive React dashboards."
 readme = "README.md"
 license = "MIT"

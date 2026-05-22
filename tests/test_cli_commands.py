@@ -20,11 +20,13 @@ class TestVersionCommand:
 
     def test_version_output(self) -> None:
         """version command prints the current version."""
+        from holysheet import __version__
+
         runner = CliRunner()
         result = runner.invoke(cli, ["version"])
         assert result.exit_code == 0
         assert "holysheet" in result.output.lower()
-        assert "0.4.0" in result.output
+        assert __version__ in result.output
 
 
 # ---------------------------------------------------------------------------

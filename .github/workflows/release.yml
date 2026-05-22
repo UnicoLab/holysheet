@@ -19,6 +19,14 @@ on:
         options:
           - "false"
           - "true"
+      skip_ci:
+        description: "Skip CI gate (use for recovery)"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
 
 permissions:
   contents: write
@@ -27,18 +35,24 @@ permissions:
 jobs:
   # ── Gate: wait for CI to pass ─────────────────────────────────
   ci:
+    if: ${{ github.event.inputs.skip_ci != 'true' }}
     uses: ./.github/workflows/ci.yml
 
   # ── Semantic Release + PyPI ───────────────────────────────────
   release:
     needs: ci
+    if: always() && (needs.ci.result == 'success' || github.event.inputs.skip_ci == 'true')
     runs-on: ubuntu-latest
     concurrency: release
-    if: github.repository_owner == 'UnicoLab'
 
     environment:
       name: pypi
       url: https://pypi.org/project/holysheet/
+
+    outputs:
+      released: ${{ steps.release.outputs.released }}
+      version: ${{ steps.release.outputs.version }}
+      tag: ${{ steps.release.outputs.tag }}
 
     steps:
       - uses: actions/checkout@v4
@@ -90,7 +104,22 @@ jobs:
 
       # ── Publish to PyPI (trusted publishing) ──────────────────
       - name: Publish to PyPI
+        id: publish_pypi
         if: steps.release.outputs.released == 'true'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
+        continue-on-error: true
+
+      # ── Retry PyPI publish on failure ─────────────────────────
+      - name: Retry PyPI publish
+        if: steps.publish_pypi.outcome == 'failure'
+        run: |
+          echo "First PyPI publish attempt failed, retrying in 10s..."
+          sleep 10
+        # Retry the action
+      - name: Retry PyPI publish (attempt 2)
+        if: steps.publish_pypi.outcome == 'failure'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/
@@ -114,3 +143,4 @@ jobs:
           echo "| Version  | \`${{ steps.release.outputs.version }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| Tag      | \`${{ steps.release.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| Dry Run  | \`${{ github.event.inputs.dry_run || 'false' }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| PyPI     | \`${{ steps.publish_pypi.outcome || 'skipped' }}\` |" >> $GITHUB_STEP_SUMMARY

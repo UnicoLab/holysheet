@@ -1,0 +1,55 @@
+name: Docs PR Preview
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - dev
+      - main
+    paths:
+      - "docs/**"
+      - mkdocs.yml
+  pull_request:
+    branches:
+      - dev
+      - main
+    paths:
+      - "docs/**"
+      - mkdocs.yml
+    types:
+      - opened
+      - reopened
+      - edited
+      - synchronize
+
+concurrency: preview-${{ github.ref }}
+
+jobs:
+  deploy-pr-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install docs dependencies
+        run: |
+          pip install \
+            "mkdocs>=1.6" \
+            "mkdocs-material>=9.5" \
+            "mkdocstrings[python]>=0.24" \
+            "mkdocs-minify-plugin>=0.8" \
+            "mike>=2.1"
+
+      - name: Build docs
+        run: mkdocs build --strict
+
+      - name: Deploy preview
+        if: github.event_name == 'pull_request'
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: ./site/
+          token: ${{ secrets.GITHUB_TOKEN }}

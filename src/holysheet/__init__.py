@@ -76,7 +76,7 @@ from holysheet.blocks import (
 from holysheet.report import Report
 from holysheet.themes import Theme
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 __all__ = [
     "KPI",

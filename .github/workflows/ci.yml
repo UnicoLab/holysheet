@@ -2,10 +2,28 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
+    paths:
+      - "**.py"
+      - "pyproject.toml"
+      - "tests/**"
+      - "frontend/**"
   pull_request:
-    branches: [main]
+    branches: [main, dev]
+    types:
+      - opened
+      - edited
+      - synchronize
+    paths:
+      - "**.py"
+      - "pyproject.toml"
+      - "tests/**"
+      - "frontend/**"
   workflow_call:  # Allow release.yml to call this workflow
+
+concurrency:
+  group: "${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}"
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -58,6 +76,61 @@ jobs:
 
       - name: Run tests
         run: pytest tests/ -v --tb=short
+
+  # Coverage job (only on primary Python version)
+  coverage:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build frontend
+        run: |
+          cd frontend && npm ci && npm run build && cd ..
+          mkdir -p src/holysheet/renderer/assets
+          cp frontend/dist/index.html src/holysheet/renderer/index.html
+          cp frontend/dist/assets/*.js src/holysheet/renderer/assets/app.js
+          cp frontend/dist/assets/*.css src/holysheet/renderer/assets/app.css 2>/dev/null || touch src/holysheet/renderer/assets/app.css
+
+      - name: Install dependencies
+        run: uv pip install --system -e ".[dev]"
+
+      - name: Run tests with coverage
+        run: pytest tests/ -v --tb=short --cov=holysheet --cov-report=xml --cov-report=html --cov-report=term-missing
+        timeout-minutes: 20
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-holysheet
+          fail_ci_if_error: false
+        continue-on-error: true
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: htmlcov/
+          retention-days: 30
 
   build:
     needs: test
