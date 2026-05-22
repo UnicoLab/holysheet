@@ -4,12 +4,16 @@ hide:
   - toc
 ---
 
+<div style="text-align: center; margin: 2rem 0;">
+<img src="assets/holysheet_logo.png" alt="HolySheet Mascot" style="width: 200px; margin-bottom: 1rem;" />
+</div>
+
 # 📊 HolySheet
 
 <div style="text-align: center; margin: 2rem 0;">
 <p style="font-size: 1.4rem; font-weight: 300; color: var(--md-default-fg-color--light);">
-<strong>Python-first report compiler</strong> that generates beautiful,<br>
-interactive dashboards — in a single line of code.
+<strong>Python-first report compiler</strong> that turns raw data into stunning,<br>
+interactive React dashboards — zero frontend knowledge required.
 </p>
 </div>
 

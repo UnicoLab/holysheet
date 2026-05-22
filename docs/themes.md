@@ -9,21 +9,21 @@ HolySheet ships with **three carefully designed themes** that give your dashboar
 
 <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin: 2rem 0;">
 <div style="text-align: center; flex: 1; min-width: 250px;">
-<img src="assets/screenshots/screenshot_dark_theme.png" alt="Dark Theme" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.3);" />
+<img src="../assets/screenshots/screenshot_dark_theme.png" alt="Dark Theme" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.3);" />
 <p style="font-weight: 600; margin-top: 0.5rem;">🌙 Dark Theme</p>
 </div>
 <div style="text-align: center; flex: 1; min-width: 250px;">
-<img src="assets/screenshots/screenshot_light_theme.png" alt="Light Theme" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.15);" />
+<img src="../assets/screenshots/screenshot_light_theme.png" alt="Light Theme" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.15);" />
 <p style="font-weight: 600; margin-top: 0.5rem;">☀️ Light Theme</p>
 </div>
 <div style="text-align: center; flex: 1; min-width: 250px;">
-<img src="assets/screenshots/screenshot_executive_theme.png" alt="Executive Theme" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.3);" />
+<img src="../assets/screenshots/screenshot_executive_theme.png" alt="Executive Theme" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.3);" />
 <p style="font-weight: 600; margin-top: 0.5rem;">👔 Executive Theme</p>
 </div>
 </div>
 
 !!! info "KPI Cards Across All Themes"
-    <img src="assets/screenshots/screenshot_kpi_cards.png" alt="KPI Cards Comparison" style="width: 100%; border-radius: 8px; margin-top: 0.5rem;" />
+    <img src="../assets/screenshots/screenshot_kpi_cards.png" alt="KPI Cards Comparison" style="width: 100%; border-radius: 8px; margin-top: 0.5rem;" />
     <p style="text-align: center; font-size: 0.85rem; margin-top: 0.5rem;"><em>The same KPI cards automatically adapt to your chosen theme's design system.</em></p>
 
 ## Available Themes

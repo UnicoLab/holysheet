@@ -4,16 +4,35 @@ Real-world, copy-paste-ready examples showcasing HolySheet's capabilities.
 
 <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin: 1.5rem 0;">
 <div style="text-align: center; flex: 1; min-width: 220px;">
-<img src="assets/screenshots/screenshot_light_theme.png" alt="Basic Report" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.15);" />
+<img src="../assets/screenshots/screenshot_light_theme.png" alt="Basic Report" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.15);" />
 <p style="font-size: 0.85rem;"><strong>Basic Report</strong> · Light Theme</p>
 </div>
 <div style="text-align: center; flex: 1; min-width: 220px;">
-<img src="assets/screenshots/screenshot_executive_theme.png" alt="Sales Dashboard" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.3);" />
+<img src="../assets/screenshots/screenshot_executive_theme.png" alt="Sales Dashboard" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.3);" />
 <p style="font-size: 0.85rem;"><strong>Sales Dashboard</strong> · Executive Theme</p>
 </div>
 <div style="text-align: center; flex: 1; min-width: 220px;">
-<img src="assets/screenshots/screenshot_dark_theme.png" alt="Portfolio Report" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.3);" />
+<img src="../assets/screenshots/screenshot_dark_theme.png" alt="Portfolio Report" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.3);" />
 <p style="font-size: 0.85rem;"><strong>Portfolio Report</strong> · Dark Theme</p>
+</div>
+</div>
+
+<div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin: 1.5rem 0;">
+<div style="text-align: center; flex: 1; min-width: 220px;">
+<img src="../assets/screenshots/screenshot_basic_report.png" alt="Basic Report" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.15);" />
+<p style="font-size: 0.85rem;"><strong>Basic Report</strong> · Light Theme</p>
+</div>
+<div style="text-align: center; flex: 1; min-width: 220px;">
+<img src="../assets/screenshots/screenshot_portfolio_report.png" alt="Portfolio Report" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.3);" />
+<p style="font-size: 0.85rem;"><strong>Portfolio Report</strong> · Dark Theme</p>
+</div>
+<div style="text-align: center; flex: 1; min-width: 220px;">
+<img src="../assets/screenshots/screenshot_full_showcase.png" alt="Full Showcase" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.3);" />
+<p style="font-size: 0.85rem;"><strong>Full Showcase</strong> · Dark Theme</p>
+</div>
+<div style="text-align: center; flex: 1; min-width: 220px;">
+<img src="../assets/screenshots/screenshot_sales_dashboard.png" alt="Sales Dashboard" style="width: 100%; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.3);" />
+<p style="font-size: 0.85rem;"><strong>Sales Dashboard</strong> · Executive Theme</p>
 </div>
 </div>
 
@@ -73,7 +92,7 @@ print("✓ Exported: basic_report.html, basic_report.json")
 !!! example "Output"
     A clean, light-themed dashboard with 3 KPI cards and a user growth line chart.
 
-    <img src="assets/screenshots/screenshot_light_theme.png" alt="Basic Report Output" style="width: 100%; border-radius: 8px; margin-top: 0.5rem;" />
+    <img src="../assets/screenshots/screenshot_light_theme.png" alt="Basic Report Output" style="width: 100%; border-radius: 8px; margin-top: 0.5rem;" />
 
 ---
 
@@ -184,7 +203,7 @@ report.export_html("sales_dashboard.html")
 !!! example "Output"
     An executive-themed sales dashboard with gold accents, KPI cards, line chart, regional analysis, and deal pipeline table.
 
-    <img src="assets/screenshots/screenshot_executive_theme.png" alt="Sales Dashboard Output" style="width: 100%; border-radius: 8px; margin-top: 0.5rem;" />
+    <img src="../assets/screenshots/screenshot_executive_theme.png" alt="Sales Dashboard Output" style="width: 100%; border-radius: 8px; margin-top: 0.5rem;" />
 
 ## :briefcase: Portfolio Report
 
@@ -280,7 +299,7 @@ report.export_html("portfolio_report.html")
 !!! example "Output"
     A dark-themed executive portfolio with KPIs, revenue trends, team delivery metrics, and a project details table.
 
-    <img src="assets/screenshots/screenshot_dark_theme.png" alt="Portfolio Report Output" style="width: 100%; border-radius: 8px; margin-top: 0.5rem;" />
+    <img src="../assets/screenshots/screenshot_dark_theme.png" alt="Portfolio Report Output" style="width: 100%; border-radius: 8px; margin-top: 0.5rem;" />
 
 ## :star2: Full Showcase
 

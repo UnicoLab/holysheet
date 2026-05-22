@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/holysheet_logo.png" alt="HolySheet Mascot" width="280" />
+  <img src="https://raw.githubusercontent.com/UnicoLab/holysheet/main/assets/holysheet_logo.png" alt="HolySheet Mascot" width="280" />
 </p>
 
 <h1 align="center">📊 HolySheet</h1>
@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/holysheet_hero.png" alt="HolySheet — Data to Dashboard" width="680" />
+  <img src="https://raw.githubusercontent.com/UnicoLab/holysheet/main/assets/holysheet_hero.png" alt="HolySheet — Data to Dashboard" width="680" />
 </p>
 
 <p align="center">
@@ -42,15 +42,15 @@
 <tr>
 <td align="center">
 <strong>🌙 Dark Theme</strong><br/>
-<img src="assets/screenshot_dark_theme.png" alt="HolySheet Dark Theme Dashboard" width="380" />
+<img src="https://raw.githubusercontent.com/UnicoLab/holysheet/main/assets/screenshot_dark_theme.png" alt="HolySheet Dark Theme Dashboard" width="380" />
 </td>
 <td align="center">
 <strong>☀️ Light Theme</strong><br/>
-<img src="assets/screenshot_light_theme.png" alt="HolySheet Light Theme Dashboard" width="380" />
+<img src="https://raw.githubusercontent.com/UnicoLab/holysheet/main/assets/screenshot_light_theme.png" alt="HolySheet Light Theme Dashboard" width="380" />
 </td>
 <td align="center">
 <strong>👔 Executive Theme</strong><br/>
-<img src="assets/screenshot_executive_theme.png" alt="HolySheet Executive Theme Dashboard" width="380" />
+<img src="https://raw.githubusercontent.com/UnicoLab/holysheet/main/assets/screenshot_executive_theme.png" alt="HolySheet Executive Theme Dashboard" width="380" />
 </td>
 </tr>
 </table>
@@ -58,6 +58,31 @@
 <p align="center">
   <sub>All dashboards above are generated from Python code — zero frontend knowledge required.<br/>Each is a single, self-contained HTML file that opens in any browser.</sub>
 </p>
+
+<table>
+<tr>
+<td align="center">
+<strong>📊 Basic Report</strong><br/>
+<img src="https://raw.githubusercontent.com/UnicoLab/holysheet/main/assets/screenshot_basic_report.png" alt="HolySheet Basic Report" width="280" /><br/>
+<sub>KPI cards + line chart · Light theme</sub>
+</td>
+<td align="center">
+<strong>💼 Sales Analytics</strong><br/>
+<img src="https://raw.githubusercontent.com/UnicoLab/holysheet/main/assets/screenshot_sales_dashboard.png" alt="HolySheet Sales Dashboard" width="280" /><br/>
+<sub>Tabbed charts + KPIs · Executive theme</sub>
+</td>
+<td align="center">
+<strong>🏢 Portfolio Report</strong><br/>
+<img src="https://raw.githubusercontent.com/UnicoLab/holysheet/main/assets/screenshot_portfolio_report.png" alt="HolySheet Portfolio Report" width="280" /><br/>
+<sub>Columns layout + data table · Dark theme</sub>
+</td>
+<td align="center">
+<strong>🚀 Full Showcase</strong><br/>
+<img src="https://raw.githubusercontent.com/UnicoLab/holysheet/main/assets/screenshot_full_showcase.png" alt="HolySheet Full Showcase" width="280" /><br/>
+<sub>37 blocks, all chart types · Dark theme</sub>
+</td>
+</tr>
+</table>
 
 ---
 
@@ -201,11 +226,11 @@ HolySheet ships with **57 block types** organized into seven categories.
 <table>
 <tr>
 <td align="center">
-<img src="assets/screenshot_charts.png" alt="HolySheet Chart Types" width="520" /><br/>
+<img src="https://raw.githubusercontent.com/UnicoLab/holysheet/main/assets/screenshot_charts.png" alt="HolySheet Chart Types" width="520" /><br/>
 <sub>18 chart types: line, bar, pie, radar, heatmap, funnel, and more</sub>
 </td>
 <td align="center">
-<img src="assets/screenshot_datatable.png" alt="HolySheet Data Table" width="520" /><br/>
+<img src="https://raw.githubusercontent.com/UnicoLab/holysheet/main/assets/screenshot_datatable.png" alt="HolySheet Data Table" width="520" /><br/>
 <sub>Interactive tables with search, sort, pagination & conditional formatting</sub>
 </td>
 </tr>
@@ -216,7 +241,7 @@ HolySheet ships with **57 block types** organized into seven categories.
 <summary><strong>🖼️ Block Preview — KPI Cards Across Themes</strong></summary>
 <br/>
 <p align="center">
-  <img src="assets/screenshot_kpi_cards.png" alt="HolySheet KPI Cards — Dark, Light, Executive" width="720" />
+  <img src="https://raw.githubusercontent.com/UnicoLab/holysheet/main/assets/screenshot_kpi_cards.png" alt="HolySheet KPI Cards — Dark, Light, Executive" width="720" />
 </p>
 <p align="center"><sub>KPI cards automatically adapt to your chosen theme</sub></p>
 </details>
@@ -326,17 +351,17 @@ Each theme defines a complete design system: colors, typography (Inter / Georgia
 <tr>
 <td align="center">
 <strong>🌙 Dark</strong><br/>
-<img src="assets/screenshot_dark_theme.png" alt="Dark Theme" width="340" /><br/>
+<img src="https://raw.githubusercontent.com/UnicoLab/holysheet/main/assets/screenshot_dark_theme.png" alt="Dark Theme" width="340" /><br/>
 <sub>Glassmorphism cards, vibrant accents<br/>Ideal for internal dashboards</sub>
 </td>
 <td align="center">
 <strong>☀️ Light</strong><br/>
-<img src="assets/screenshot_light_theme.png" alt="Light Theme" width="340" /><br/>
+<img src="https://raw.githubusercontent.com/UnicoLab/holysheet/main/assets/screenshot_light_theme.png" alt="Light Theme" width="340" /><br/>
 <sub>Clean, professional, print-ready<br/>Ideal for client-facing reports</sub>
 </td>
 <td align="center">
 <strong>👔 Executive</strong><br/>
-<img src="assets/screenshot_executive_theme.png" alt="Executive Theme" width="340" /><br/>
+<img src="https://raw.githubusercontent.com/UnicoLab/holysheet/main/assets/screenshot_executive_theme.png" alt="Executive Theme" width="340" /><br/>
 <sub>Gold accents, serif typography<br/>Ideal for board presentations</sub>
 </td>
 </tr>
@@ -448,7 +473,7 @@ report.export_html("sales_analytics.html")
 <summary><strong>🖼️ Example Output — Sales Dashboard (Executive Theme)</strong></summary>
 <br/>
 <p align="center">
-  <img src="assets/screenshot_executive_theme.png" alt="Sales Dashboard Output" width="720" />
+  <img src="https://raw.githubusercontent.com/UnicoLab/holysheet/main/assets/screenshot_executive_theme.png" alt="Sales Dashboard Output" width="720" />
 </p>
 <p align="center"><sub>Generated by <code>examples/sales_dashboard.py</code> — a single self-contained HTML file</sub></p>
 </details>

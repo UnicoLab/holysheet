@@ -91,10 +91,7 @@ Homepage = "https://github.com/UnicoLab/holysheet"
 Documentation = "https://unicolab.github.io/holysheet"
 Repository = "https://github.com/UnicoLab/holysheet"
 Issues = "https://github.com/UnicoLab/holysheet/issues"
-
-
-
-
+Changelog = "https://github.com/UnicoLab/holysheet/blob/main/CHANGELOG.md"
 
 
 [tool.hatch.build.targets.wheel]
