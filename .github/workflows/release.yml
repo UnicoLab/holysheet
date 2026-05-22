@@ -40,9 +40,8 @@ jobs:
     if: always() && (needs.CI_GATE.result == 'success' || inputs.SKIP_CI) && !inputs.SKIP_RELEASE
     runs-on: ubuntu-latest
     outputs:
-      new_release_version: ${{ steps.semantic-release.outputs.version }}
-      release_created: ${{ steps.semantic-release.outputs.released }}
-      release_tag: ${{ steps.semantic-release.outputs.tag }}
+      new_release_version: ${{ steps.semantic-release.outputs.new_release_version }}
+      release_created: ${{ steps.semantic-release.outputs.new_release_published }}
 
     steps:
       - name: Checkout repository
@@ -83,47 +82,54 @@ jobs:
           test -f src/holysheet/renderer/assets/app.js || (echo "FATAL: app.js missing" && exit 1)
           echo "✓ Renderer assets verified: $(du -sh src/holysheet/renderer/assets/)"
 
-      - name: Python Semantic Release
+      # ── Run semantic-release via CLI (same approach as FlowyML) ──
+      - name: Semantic Release
         id: semantic-release
-        if: ${{ !inputs.DRY_RUN }}
-        uses: python-semantic-release/python-semantic-release@v9.21.1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [[ "${{ inputs.DRY_RUN }}" == "true" ]]; then
+            echo "Running in dry-run mode"
+            semantic-release version --print
+            echo "new_release_published=false" >> $GITHUB_OUTPUT
+          else
+            semantic-release version
+            if [ $? -eq 0 ]; then
+              VERSION=$(semantic-release version --print)
+              echo "new_release_published=true" >> $GITHUB_OUTPUT
+              echo "new_release_version=$VERSION" >> $GITHUB_OUTPUT
+              echo "✅ Released version: $VERSION"
+            else
+              echo "new_release_published=false" >> $GITHUB_OUTPUT
+              echo "⚠️ No release created"
+            fi
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Python Semantic Release (dry run)
-        if: ${{ inputs.DRY_RUN }}
-        uses: python-semantic-release/python-semantic-release@v9.21.1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          root_options: "--noop"
-
-      - name: Upload to GitHub Releases
-        if: steps.semantic-release.outputs.released == 'true'
-        uses: python-semantic-release/publish-action@v9.21.1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ steps.semantic-release.outputs.tag }}
+      - name: Show release information
+        shell: bash
+        run: |
+          echo "Release created: ${{ steps.semantic-release.outputs.new_release_published }}"
+          echo "New version: ${{ steps.semantic-release.outputs.new_release_version }}"
 
       - name: Save release version for recovery
-        if: steps.semantic-release.outputs.released == 'true'
+        if: steps.semantic-release.outputs.new_release_published == 'true'
         run: |
           mkdir -p .github/recovery
-          echo "${{ steps.semantic-release.outputs.version }}" > .github/recovery/last_release_version.txt
+          echo "${{ steps.semantic-release.outputs.new_release_version }}" > .github/recovery/last_release_version.txt
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor }}@users.noreply.github.com"
           git add .github/recovery/last_release_version.txt
           git commit -m "chore: save last release version for recovery [skip ci]" || echo "No changes to commit"
           git push || echo "Failed to push recovery file"
 
-      - name: Show release information
+      - name: Release summary
         if: always()
         run: |
           echo "## Semantic Release Summary" >> $GITHUB_STEP_SUMMARY
           echo "| Key | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|-----|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Released | \`${{ steps.semantic-release.outputs.released || 'false' }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| Version  | \`${{ steps.semantic-release.outputs.version || 'N/A' }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| Tag      | \`${{ steps.semantic-release.outputs.tag || 'N/A' }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Released | \`${{ steps.semantic-release.outputs.new_release_published || 'false' }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Version  | \`${{ steps.semantic-release.outputs.new_release_version || 'N/A' }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| Dry Run  | \`${{ inputs.DRY_RUN }}\` |" >> $GITHUB_STEP_SUMMARY
 
   # ── Publish to PyPI ───────────────────────────────────────────
