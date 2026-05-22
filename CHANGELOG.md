@@ -1,6 +1,35 @@
 # CHANGELOG
 
 
+## v0.6.0 (2026-05-22)
+
+### Features
+
+- Enhance README with key highlights, downloads badge, CONTRIBUTING.md, and fix block counts
+  ([`7c430ce`](https://github.com/UnicoLab/holysheet/commit/7c430ce947e13108177a4f01b5ac062792ab3ee5))
+
+- Add Key Highlights section with 8 bullet points summarizing all capabilities - Add PyPI downloads
+  badge to badge row - Add CONTRIBUTING.md with full development guide - Fix block count: 47 → 57
+  across all docs (index.md, getting-started.md) - Improve Contributing section with bold formatting
+  and link to guide - Add footer links (PyPI, Docs, Issues, Discussions) - Clean up subtitle and
+  feature descriptions
+
+
+## v0.5.0 (2026-05-22)
+
+### Bug Fixes
+
+- **release**: Use PYPI_TOKEN with twine instead of OIDC trusted publishing
+  ([`c2b5584`](https://github.com/UnicoLab/holysheet/commit/c2b5584e4be9867e851b85871e1b9799efd14e63))
+
+- Rewrite release.yml to 3-job pattern (SEMANTIC_RELEASE → PYPI_PUBLISH → UPDATE_DOCS) - Replace
+  pypa/gh-action-pypi-publish with twine upload using PYPI_TOKEN secret - Add UPDATE_DOCS job to
+  release workflow with mike deploy + set-default - Rewrite MANUAL_PYPI_PUBLISH.yml to use twine +
+  PYPI_TOKEN - Add recovery version file (.github/recovery/last_release_version.txt) - Add
+  screenshot gallery to README and docs for visual preview - Enhance docs/themes.md,
+  docs/examples.md, docs/index.md with screenshots
+
+
 ## v0.3.0 (2026-05-22)
 
 ### Continuous Integration
